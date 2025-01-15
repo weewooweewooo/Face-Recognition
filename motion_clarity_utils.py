@@ -29,18 +29,17 @@ class MotionClarityUtils:
         if self.clarity_threshold:
             avg_clarity = np.mean(self.clarity_threshold)
             self.clarity_threshold = max(30.0, min(70.0, avg_clarity * 0.8))
-            logging.info(f"Updated Clarity Threshold: {self.clarity_threshold:.2f}")
 
     def measure_clarity(self, image):
         try:
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()        
+            laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
             laplacian_var = min(laplacian_var, 150.0)
 
-            self.frame_clarity_scores.append(laplacian_var)  # Track clarity scores
+            self.frame_clarity_scores.append(laplacian_var)
 
             smoothed_clarity = np.median(self.frame_clarity_scores)
-            self.update_thresholds()  # Update thresholds dynamically
+            self.update_thresholds()
 
             avg_motion = np.mean(self.motion_scores) if self.motion_scores else 0.0
             adjusted_clarity_threshold = (
@@ -72,12 +71,11 @@ class MotionClarityUtils:
     def check_motion(self, frame, bbox=None):
         try:
             if bbox:
-                
                 x1, y1, x2, y2 = map(int, bbox)
                 frame_resized = cv2.resize(frame[y1:y2, x1:x2], self.frame_size)
             else:
                 frame_resized = cv2.resize(frame, self.frame_size)
-                
+
             if self.previous_frame is None:
                 self.previous_frame = frame_resized
                 self.motion_scores.append(0.0)
@@ -96,18 +94,20 @@ class MotionClarityUtils:
             self.update_thresholds()
 
             avg_motion = self.smooth_motion_scores()
-            normalized_motion_score = motion_score / max(avg_motion, 1)
+            smoothed_motion_score = np.mean(self.motion_scores)
 
-            if normalized_motion_score > self.motion_threshold:
+            # Adjusted threshold with more tolerance
+            adjusted_threshold = max(self.motion_threshold * 0.7, 2.0)
+
+            if smoothed_motion_score < adjusted_threshold:
                 self.high_motion_count += 1
-                logging.info(
-                    f"Motion Score: {motion_score:.2f}, Threshold: {self.motion_threshold:.2f}"
-                )
-                if self.high_motion_count >= 3:  # Allow up to 3 high-motion frames
-                    logging.info("Excessive motion detected, skipping frame.")
+                if (
+                    self.high_motion_count >= 3
+                ):  # Require 3 consecutive low-motion frames
+                    logging.info("Low motion detected; likely static image.")
                     return False
             else:
-                self.high_motion_count = 0  # Reset high-motion counter if normal
+                self.high_motion_count = 0
 
             return True
         except Exception as e:
@@ -131,3 +131,47 @@ class MotionClarityUtils:
         except Exception as e:
             logging.error(f"Error in check_clarity: {e}")
             return False, False
+
+    def analyze_texture(self, face_crop):
+        try:
+            gray = cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY)
+            laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()  # Measure texture
+
+            texture_threshold_min = 50.0
+            texture_threshold_max = 1000.0
+            logging.info(f"Texture Score: {laplacian_var:.2f}")
+
+            if (
+                laplacian_var < texture_threshold_min
+                or laplacian_var > texture_threshold_max
+            ):
+                logging.info("Low texture detected: Likely a photo.")
+                return False
+            return True
+        except Exception as e:
+            logging.error(f"Error in texture analysis: {e}")
+            return False
+
+    def analyze_frequency(self, face_crop):
+        gray = cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY)
+        f_transform = np.fft.fft2(gray)
+        f_shift = np.fft.fftshift(f_transform)
+        magnitude_spectrum = 20 * np.log(np.abs(f_shift))
+        
+        mean_frequency = np.mean(magnitude_spectrum)
+        logging.info(f"Mean Frequency: {mean_frequency:.2f}")
+        frequency_threshold = 100.0
+        if mean_frequency < frequency_threshold:
+            logging.info("Low frequency detected: Likely a photo.")
+            return False
+        return True
+
+    def detect_head_movement(self, previous_landmarks, current_landmarks):
+        movement_threshold = 10
+        movement = np.linalg.norm(
+            np.array(current_landmarks) - np.array(previous_landmarks)
+        )
+        if movement < movement_threshold:
+            logging.info(f"Insufficient head movement: {movement:.2f}. Likely a photo.")
+            return False
+        return True

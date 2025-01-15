@@ -38,20 +38,13 @@ class AntiSpoofing:
             r"weights\2.7_80x80_MiniFASNetV2.pth"
         )
         self.motion_clarity_utils = MotionClarityUtils()
-        self.frame_buffer = collections.deque(maxlen=5)
-        self.current_decision = {}
+        self.face_buffers = {}
+        self.current_decisions = {}
         self.real_threshold = 0.7
         self.fake_threshold = 0.3
         self.hysteresis_margin = 0.1
-        self.face_buffers = {}
-
-    def remove_lost_faces(self, current_faces):
-        current_ids = {f"{x1}-{y1}-{x2}-{y2}" for x1, y1, x2, y2, _ in current_faces}
-        self.face_buffers = {
-            key: buffer
-            for key, buffer in self.face_buffers.items()
-            if key in current_ids
-        }
+        self.failure_counter = {}
+        self.failure_threshold = 3
 
     def update_buffer(self, face_id, is_real):
         if face_id not in self.face_buffers:
@@ -60,8 +53,8 @@ class AntiSpoofing:
 
     def get_final_decision(self, face_id):
         if face_id not in self.face_buffers or len(self.face_buffers[face_id]) < 5:
-            return None  # Not enough frames yet
-        weights = [1, 1, 1.5, 2, 2.5]  # Weighted sliding window
+            return None
+        weights = [1, 1, 1.5, 2, 2.5]
         buffer = self.face_buffers[face_id]
         weighted_sum = sum(w * result for w, result in zip(weights, buffer))
         total_weight = sum(weights[: len(buffer)])
@@ -76,7 +69,7 @@ class AntiSpoofing:
     def extract_face(self, frame):
         try:
             detections, _ = self.face_detector.detect(frame, input_size=(128, 128))
-            if detections is not None and len(detections) > 0:q
+            if detections is not None and len(detections) > 0:
                 x1, y1, x2, y2, _ = map(int, detections[0])
                 h, w = frame.shape[:2]
                 x1, y1 = max(0, x1), max(0, y1)
@@ -92,14 +85,10 @@ class AntiSpoofing:
     def analyze_frame(self, face_crop, face_id):
         try:
             is_real = self.anti_spoofing_model.predict(face_crop)
-            logging.info(f"Anti-Spoofing Model Prediction for {face_id}: {'Real' if is_real else 'Fake'}")
-
-            if face_id not in self.face_buffers:
-                self.face_buffers[face_id] = collections.deque(maxlen=5)
-            self.face_buffers[face_id].append(is_real)
+            self.update_buffer(face_id, is_real)
 
             if len(self.face_buffers[face_id]) == self.face_buffers[face_id].maxlen:
-                weights = [1, 1, 1.5, 2, 2.5]  # Assign more weight to recent frames
+                weights = [1, 1, 1.5, 2, 2.5]
                 weighted_sum = sum(w * result for w, result in zip(weights, self.face_buffers[face_id]))
                 total_weight = sum(weights)
                 weighted_average = weighted_sum / total_weight
@@ -126,8 +115,45 @@ class AntiSpoofing:
         except Exception as e:
             logging.error(f"Error in analyze_frame for {face_id}: {e}")
             return None
+        
+    def liveness_check(self, face_crop, frame, bbox, face_id):
+        try:
+            if face_id not in self.failure_counter:
+                self.failure_counter[face_id] = 0
+            
+            motion_valid = self.motion_clarity_utils.check_motion(frame, bbox=bbox)
+            if not motion_valid:
+                self.failure_counter[face_id] += 1
+                logging.info(f"Face {face_id} failed motion check (relaxed).")
+                return False, "No Motion"
 
+            clarity_valid, clarity_score = self.motion_clarity_utils.check_clarity(face_crop)
+            if not clarity_valid:
+                self.failure_counter[face_id] += 1
+                logging.info(f"Face {face_id} failed clarity check with score {clarity_score:.2f}.")
+                return False, "Fake"
+            
+            if not self.motion_clarity_utils.analyze_texture(face_crop):
+                self.failure_counter[face_id] += 1            
+                return False, "Fake"
+            
+            if not self.motion_clarity_utils.analyze_frequency(face_crop):
+                self.failure_counter[face_id] += 1
+                return False, "Fake"
 
+            is_real = self.anti_spoofing_model.predict(face_crop)
+            if not is_real:
+                logging.info(f"Face {face_id} classified as Fake by anti-spoofing model.")
+                return False, "Fake"
+
+            # Step 4: Return real status if all checks pass
+            logging.info(f"Face {face_id} passed all liveness checks and classified as Real.")
+            self.failure_counter[face_id] = 0
+            return True, "Real"
+
+        except Exception as e:
+            logging.error(f"Error in liveness check for {face_id}: {e}")
+            return False, "Error"
 
 class FaceTracker:
     def __init__(self, detection_model_file, model, face_directory, db_path):
@@ -271,91 +297,99 @@ class FaceTracker:
         return FaceUtils.get_face_embedding(
             self.face_detector, self.recognition_model, img
         )
-
+        
     def handle_frame(self, frame):
-        # Resize frame to reduce computational load
         frame = cv2.resize(frame, (640, 480))
-        try:
-            detections, landmarks = self.face_detector.detect(
-                frame, input_size=(128, 128)
-            )
+        try:    
+            detections, landmarks = self.face_detector.detect(frame, input_size=(128, 128))
             logging.info(f"Detections: {detections}")
+            
             if detections is not None and len(detections) > 0:
+                detections = np.array(detections)  # Ensure it's a NumPy array
                 tracked_faces = self.update_tracks(frame, detections)
                 self.update_face_labels(tracked_faces)
 
                 with ThreadPoolExecutor() as executor:
                     futures = []
                     for tracked_face in tracked_faces:
-                        x1, y1, x2, y2 = map(int, tracked_face.tlwh[:4])
+                        x1, y1, w, h = map(int, tracked_face.tlwh[:4])
+                        x2, y2 = x1 + w, y1 + h
+                        if x2 <= x1 or y2 <= y1:
+                            logging.warning(f"Invalid bounding box for tracker ID {tracked_face.track_id}, skipping.")
+                            continue
+                        
                         tracker_id = tracked_face.track_id
                         face_label = self.face_labels.get(tracker_id, "Unknown")
                         face_crop = frame[y1:y2, x1:x2]
 
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)  # Debugging: blue box
+                        
                         futures.append(
                             executor.submit(
-                                self.process_face, face_crop, frame, x1, y1, x2, y2
-                                )
+                                self.process_face, face_crop, frame, face_label, x1, y1, x2, y2
                             )
+                        )
+                    
                     for future in futures:
                         frame = future.result()
-                        
+            else:
+                logging.info("No faces detected.")
+            
         except Exception as e:
             logging.error(f"Error handling frame: {e}")
         return frame
+
     
     def update_face_labels(self, tracked_faces):
         current_ids = {face.track_id for face in tracked_faces}
-        # Remove labels for faces that are no longer in the frame
         self.face_labels = {
             track_id: label for track_id, label in self.face_labels.items() if track_id in current_ids
         }
 
-        # Assign new labels to untracked faces
         for face in tracked_faces:
             if face.track_id not in self.face_labels:
                 self.face_labels[face.track_id] = f"face_{self.next_label}"
                 self.next_label += 1
 
-        # Reassign labels to maintain sequential order (optional for consistency)
         sorted_labels = sorted(self.face_labels.items(), key=lambda x: x[0])
         self.face_labels = {k: f"face_{i+1}" for i, (k, _) in enumerate(sorted_labels)}
 
     def process_face(self, face_crop, frame, face_label, x1, y1, x2, y2):
-        logging.info(f"Handling face at bbox: {(x1, y1, x2, y2)}")
-        is_real  = self.anti_spoofing.analyze_frame(face_crop, face_label)
-        decision = "Real" if is_real else "Fake"
+        try:
+            logging.info(f"Processing face at bbox: {(x1, y1, x2, y2)}")
+            bbox = (x1, y1, x2, y2)
+            is_real, decision = self.anti_spoofing.liveness_check(face_crop, frame, bbox, face_label)
 
-        if decision == "Fake":
-            logging.info(f"{face_label} classified as Fake")
-            color = (0, 0, 255)
-            label = f"{face_label}: Fake"
-        elif decision == "Real":
-            face_embedding, success = self.get_face_embedding(face_crop)
-            if success:
-                name, similarity = self.identify_faces(face_embedding)
-                logging.info(f"Recognized {name} with similarity {similarity:.2f}")
-
-                if name == "Unknown":
-                    color = (0, 255, 255)
-                    label = f"{face_label}"
+            if decision == "No Motion":
+                color = (0, 0, 255)  # Red for no motion
+                label = f"{face_label}: Fake (No Motion)"
+            elif decision == "Low Clarity":
+                color = (0, 255, 255)  # Yellow for low clarity
+                label = f"{face_label}: Fake (Low Clarity)"
+            elif decision == "Fake":
+                color = (0, 0, 255)  # Red for fake
+                label = f"{face_label}: Fake"
+            elif decision == "Real":
+                face_embedding, success = self.get_face_embedding(face_crop)
+                if success:
+                    name, similarity = self.identify_faces(face_embedding)
+                    color = (0, 255, 0)  # Green for real
+                    label = f"{name} ({similarity:.2f})" if name != "Unknown" else "Real"
                 else:
-                    color = (0, 255, 0)
-                    label = f"{name} ({similarity:.2f})"
+                    color = (255, 255, 0)  # Cyan for undecided
+                    label = "Undecided"
             else:
-                color = (255, 255, 0)
-                label = "Undecided"
-        else:
-            color = (255, 255, 0)
-            label = "Undecided"
+                color = (255, 255, 0)  # Cyan for errors or unknown
+                label = decision
 
-        # Annotate the frame with bounding box and label
-        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-        cv2.putText(
-            frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2
-        )
+            # Annotate the frame with bounding box and label
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
-        return frame
+            return frame
+        except Exception as e:
+            logging.error(f"Error processing face {face_label}: {e}")
+            return frame
 
 
 def main():
@@ -369,8 +403,8 @@ def main():
         logging.error("Error: Could not open webcam.")
         return
 
-    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
-    cap.set(cv2.CAP_PROP_FOCUS, 120)
+    cap.set(cv2.CAP_PROP_AUTOFOCUS, 1)
+    cap.set(cv2.CAP_PROP_FOCUS, 70)
 
     logging.info(
         "Press 'q' to quit. Press 'c' to switch between check-in and check-out."
