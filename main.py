@@ -1,0 +1,422 @@
+import cv2
+import numpy as np
+import insightface
+import os
+import time
+import logging
+import albumentations as A
+import collections
+from yolox.tracker.byte_tracker import BYTETracker
+from sklearn.metrics.pairwise import cosine_similarity
+from database_utils import DatabaseUtils
+from silentFaceSpoofing import SilentFaceAntiSpoofing
+from face_saver import FaceSaver
+from face_utils import FaceUtils
+from concurrent.futures import ThreadPoolExecutor
+from motion_clarity_utils import MotionClarityUtils
+
+TF_ENABLE_ONEDNN_OPTS = 0
+NO_ALBUMENTATIONS_UPDATE = 1
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+
+
+class TrackerArgs:
+    def __init__(self):
+        self.fps = 60
+        self.track_thresh = 0.5
+        self.track_buffer = 30
+        self.match_thresh = 0.7
+        self.min_box_area = 10
+        self.aspect_ratio_thresh = 1.6
+
+
+class AntiSpoofing:
+    def __init__(self, face_detector):
+        self.face_detector = face_detector
+        self.anti_spoofing_model = SilentFaceAntiSpoofing(
+            r"weights\2.7_80x80_MiniFASNetV2.pth"
+        )
+        self.motion_clarity_utils = MotionClarityUtils()
+        self.frame_buffer = collections.deque(maxlen=5)
+        self.current_decision = {}
+        self.real_threshold = 0.7
+        self.fake_threshold = 0.3
+        self.hysteresis_margin = 0.1
+        self.face_buffers = {}
+
+    def remove_lost_faces(self, current_faces):
+        current_ids = {f"{x1}-{y1}-{x2}-{y2}" for x1, y1, x2, y2, _ in current_faces}
+        self.face_buffers = {
+            key: buffer
+            for key, buffer in self.face_buffers.items()
+            if key in current_ids
+        }
+
+    def update_buffer(self, face_id, is_real):
+        if face_id not in self.face_buffers:
+            self.face_buffers[face_id] = collections.deque(maxlen=5)
+        self.face_buffers[face_id].append(is_real)
+
+    def get_final_decision(self, face_id):
+        if face_id not in self.face_buffers or len(self.face_buffers[face_id]) < 5:
+            return None  # Not enough frames yet
+        weights = [1, 1, 1.5, 2, 2.5]  # Weighted sliding window
+        buffer = self.face_buffers[face_id]
+        weighted_sum = sum(w * result for w, result in zip(weights, buffer))
+        total_weight = sum(weights[: len(buffer)])
+        weighted_average = weighted_sum / total_weight
+
+        if weighted_average > self.real_threshold:
+            return "Real"
+        elif weighted_average < self.fake_threshold:
+            return "Fake"
+        return None
+
+    def extract_face(self, frame):
+        try:
+            detections, _ = self.face_detector.detect(frame, input_size=(128, 128))
+            if detections is not None and len(detections) > 0:q
+                x1, y1, x2, y2, _ = map(int, detections[0])
+                h, w = frame.shape[:2]
+                x1, y1 = max(0, x1), max(0, y1)
+                x2, y2 = min(w, x2), min(h, y2)
+                if x2 > x1 and y2 > y1:
+                    face_crop = frame[y1:y2, x1:x2]
+                    return face_crop, (x1, y1, x2, y2)
+            return None, None
+        except Exception as e:
+            logging.error(f"Error in extract_face: {e}")
+            return None, None
+
+    def analyze_frame(self, face_crop, face_id):
+        try:
+            is_real = self.anti_spoofing_model.predict(face_crop)
+            logging.info(f"Anti-Spoofing Model Prediction for {face_id}: {'Real' if is_real else 'Fake'}")
+
+            if face_id not in self.face_buffers:
+                self.face_buffers[face_id] = collections.deque(maxlen=5)
+            self.face_buffers[face_id].append(is_real)
+
+            if len(self.face_buffers[face_id]) == self.face_buffers[face_id].maxlen:
+                weights = [1, 1, 1.5, 2, 2.5]  # Assign more weight to recent frames
+                weighted_sum = sum(w * result for w, result in zip(weights, self.face_buffers[face_id]))
+                total_weight = sum(weights)
+                weighted_average = weighted_sum / total_weight
+
+                logging.info(f"Weighted Average for {face_id}: {weighted_average:.2f}")
+
+                if self.current_decisions.get(face_id) == "Real":
+                    if weighted_average < self.fake_threshold + self.hysteresis_margin:
+                        self.current_decisions[face_id] = "Fake"
+                elif self.current_decisions.get(face_id) == "Fake":
+                    if weighted_average > self.real_threshold - self.hysteresis_margin:
+                        self.current_decisions[face_id] = "Real"
+                else:
+                    if weighted_average > self.real_threshold:
+                        self.current_decisions[face_id] = "Real"
+                    elif weighted_average < self.fake_threshold:
+                        self.current_decisions[face_id] = "Fake"
+
+                logging.info(f"Final Decision for {face_id}: {self.current_decisions[face_id]}")
+                return self.current_decisions[face_id]
+
+            return None
+
+        except Exception as e:
+            logging.error(f"Error in analyze_frame for {face_id}: {e}")
+            return None
+
+
+
+class FaceTracker:
+    def __init__(self, detection_model_file, model, face_directory, db_path):
+        self.face_labels = {}
+        self.next_label = 1
+
+        self.face_detector = insightface.model_zoo.SCRFD(
+            model_file=detection_model_file
+        )
+        self.face_detector.prepare(ctx_id=0, input_size=(128, 128))
+        self.recognition_model = insightface.model_zoo.get_model(
+            r"C:\Users\User\.insightface\models\buffalo_l\w600k_r50.onnx"
+        )
+        self.recognition_model.prepare(ctx_id=0)
+        self.anti_spoofing = AntiSpoofing(self.face_detector)
+        self.face_db = self.load_face_database(face_directory)
+        args = TrackerArgs()
+        self.tracker = BYTETracker(args, frame_rate=args.fps)
+        self.db_utils = DatabaseUtils(db_path)
+        self.last_logged_time = {}
+        self.check_in_mode = True
+        self.frame_skip = 2
+        self.frame_count = 0
+        self.augmentation_pipeline = A.Compose(
+            [
+                A.HorizontalFlip(p=0.5),
+                A.Rotate(limit=10, p=0.5),
+                A.RandomBrightnessContrast(p=0.5),
+                A.GaussNoise(p=0.5),
+                A.Affine(
+                    scale=(0.9, 1.1),
+                    translate_percent=(0.0625, 0.0625),
+                    rotate=(-10, 10),
+                    p=0.5,
+                ),
+            ]
+        )
+        self.face_saver = FaceSaver(
+            self.face_detector, self.augmentation_pipeline, self.db_utils
+        )
+
+    def record_attendance(self, name):
+        current_time = time.time()
+        status = "Check-In" if self.check_in_mode else "Check-Out"
+        if self.db_utils.should_log_attendance(name, status, current_time):
+            self.db_utils.log_attendance(name, status, current_time)
+            logging.info(f"Logged {status} for {name}")
+            self.last_logged_time[name] = current_time
+
+    def load_face_database(self, face_directory):
+        face_db = {}
+        for person_name in os.listdir(face_directory):
+            person_dir = os.path.join(face_directory, person_name)
+            if os.path.isdir(person_dir):
+                for filename in os.listdir(person_dir):
+                    if filename.endswith((".jpg", ".png")):
+                        image_path = os.path.join(person_dir, filename)
+                        img = cv2.imread(image_path)
+                        if img is None:
+                            continue
+                        face, success = FaceUtils.get_face_embedding(
+                            self.face_detector, self.recognition_model, img
+                        )
+                        if success:
+                            face_db[person_name] = face
+        return face_db
+
+    def identify_faces(self, embeddings):
+        best_match = "Unknown"
+        highest_similarity = 0.0
+        embeddings = np.squeeze(embeddings)
+        for name, db_embedding in self.face_db.items():
+            db_embedding = np.squeeze(db_embedding)
+            similarity = cosine_similarity([db_embedding], [embeddings])[0][0]
+            if similarity > highest_similarity:
+                highest_similarity = similarity
+                best_match = name
+        if highest_similarity > 0.6:
+            self.record_attendance(best_match)
+            return best_match, highest_similarity
+        else:
+            return "Unknown", highest_similarity
+
+    def find_faces(self, frame):
+        try:
+            det, _ = self.face_detector.detect(img=frame, input_size=(128, 128))
+            return det
+        except Exception as e:
+            logging.error(f"Error finding faces: {e}")
+            return None
+
+    def update_tracks(self, frame, detections):
+        try:
+            img_info = [frame.shape[0], frame.shape[1]]
+            return self.tracker.update(
+                output_results=detections,
+                img_info=img_info,
+                img_size=(frame.shape[0], frame.shape[1]),
+            )
+        except Exception as e:
+            logging.error(f"Error updating tracks: {e}")
+            return []
+
+    def draw_annotations(self, frame, tracked_faces, names=[]):
+        online_tlwhs = []
+        online_ids = []
+        args = TrackerArgs()
+        for t in tracked_faces:
+            vertical = t.tlwh[2] / t.tlwh[3] > args.aspect_ratio_thresh
+            if t.tlwh[2] * t.tlwh[3] > args.min_box_area and not vertical:
+                online_tlwhs.append(t.tlwh)
+                online_ids.append(t.track_id)
+        text_scale = 2
+        text_thickness = 2
+        line_thickness = 2
+        for i, tlwh in enumerate(online_tlwhs):
+            x1, y1, w, h = map(int, tlwh)
+            intbox = (x1, y1, x1 + w, y1 + h)
+            obj_id = online_ids[i]
+            id_text = names[i] if i < len(names) else "Unknown"
+            color = self.get_color(abs(obj_id))
+            cv2.rectangle(
+                frame, intbox[:2], intbox[2:], color=color, thickness=line_thickness
+            )
+            cv2.putText(
+                frame,
+                id_text,
+                (x1, y1),
+                cv2.FONT_HERSHEY_PLAIN,
+                text_scale,
+                (0, 0, 255),
+                thickness=text_thickness,
+            )
+        return frame
+
+    def get_color(self, idx):
+        idx = idx * 3
+        return ((37 * idx) % 255, (17 * idx) % 255, (29 * idx) % 255)
+
+    def get_face_embedding(self, img):
+        return FaceUtils.get_face_embedding(
+            self.face_detector, self.recognition_model, img
+        )
+
+    def handle_frame(self, frame):
+        # Resize frame to reduce computational load
+        frame = cv2.resize(frame, (640, 480))
+        try:
+            detections, landmarks = self.face_detector.detect(
+                frame, input_size=(128, 128)
+            )
+            logging.info(f"Detections: {detections}")
+            if detections is not None and len(detections) > 0:
+                tracked_faces = self.update_tracks(frame, detections)
+                self.update_face_labels(tracked_faces)
+
+                with ThreadPoolExecutor() as executor:
+                    futures = []
+                    for tracked_face in tracked_faces:
+                        x1, y1, x2, y2 = map(int, tracked_face.tlwh[:4])
+                        tracker_id = tracked_face.track_id
+                        face_label = self.face_labels.get(tracker_id, "Unknown")
+                        face_crop = frame[y1:y2, x1:x2]
+
+                        futures.append(
+                            executor.submit(
+                                self.process_face, face_crop, frame, x1, y1, x2, y2
+                                )
+                            )
+                    for future in futures:
+                        frame = future.result()
+                        
+        except Exception as e:
+            logging.error(f"Error handling frame: {e}")
+        return frame
+    
+    def update_face_labels(self, tracked_faces):
+        current_ids = {face.track_id for face in tracked_faces}
+        # Remove labels for faces that are no longer in the frame
+        self.face_labels = {
+            track_id: label for track_id, label in self.face_labels.items() if track_id in current_ids
+        }
+
+        # Assign new labels to untracked faces
+        for face in tracked_faces:
+            if face.track_id not in self.face_labels:
+                self.face_labels[face.track_id] = f"face_{self.next_label}"
+                self.next_label += 1
+
+        # Reassign labels to maintain sequential order (optional for consistency)
+        sorted_labels = sorted(self.face_labels.items(), key=lambda x: x[0])
+        self.face_labels = {k: f"face_{i+1}" for i, (k, _) in enumerate(sorted_labels)}
+
+    def process_face(self, face_crop, frame, face_label, x1, y1, x2, y2):
+        logging.info(f"Handling face at bbox: {(x1, y1, x2, y2)}")
+        is_real  = self.anti_spoofing.analyze_frame(face_crop, face_label)
+        decision = "Real" if is_real else "Fake"
+
+        if decision == "Fake":
+            logging.info(f"{face_label} classified as Fake")
+            color = (0, 0, 255)
+            label = f"{face_label}: Fake"
+        elif decision == "Real":
+            face_embedding, success = self.get_face_embedding(face_crop)
+            if success:
+                name, similarity = self.identify_faces(face_embedding)
+                logging.info(f"Recognized {name} with similarity {similarity:.2f}")
+
+                if name == "Unknown":
+                    color = (0, 255, 255)
+                    label = f"{face_label}"
+                else:
+                    color = (0, 255, 0)
+                    label = f"{name} ({similarity:.2f})"
+            else:
+                color = (255, 255, 0)
+                label = "Undecided"
+        else:
+            color = (255, 255, 0)
+            label = "Undecided"
+
+        # Annotate the frame with bounding box and label
+        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+        cv2.putText(
+            frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2
+        )
+
+        return frame
+
+
+def main():
+    detection_model_file = "weights/scrfd_2.5g_bnkps.onnx"
+    model = "buffalo_l"
+    face_directory = "faces"
+    db_path = "attendance.db"
+    tracker = FaceTracker(detection_model_file, model, face_directory, db_path)
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        logging.error("Error: Could not open webcam.")
+        return
+
+    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+    cap.set(cv2.CAP_PROP_FOCUS, 120)
+
+    logging.info(
+        "Press 'q' to quit. Press 'c' to switch between check-in and check-out."
+    )
+    while True:
+        start_time = time.time()
+        ret, frame = cap.read()
+        if not ret:
+            logging.error("Failed to grab frame.")
+            break
+        original_frame = frame.copy()
+        annotated_frame = tracker.handle_frame(frame)
+        if cv2.waitKey(1) & 0xFF == ord('s'):
+            name = input("Enter name for the new face: ")
+            tracker.face_saver.save_face(name, original_frame, face_directory, cap)
+        if cv2.waitKey(1) & 0xFF == ord('c'):
+            tracker.check_in_mode = not tracker.check_in_mode
+            mode = "Check-In" if tracker.check_in_mode else "Check-Out"
+            logging.info(f"Switched to {mode} mode")
+        elapsed_time = time.time() - start_time
+        fps = 1 / elapsed_time
+        cv2.putText(
+            frame,
+            f"FPS: {fps:.2f}",
+            (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+        mode_text = "Check-In" if tracker.check_in_mode else "Check-Out"
+        cv2.putText(
+            frame,
+            f"Mode: {mode_text}",
+            (10, 60),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+        cv2.imshow("ByteTrack Face Tracking", annotated_frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()
