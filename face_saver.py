@@ -8,12 +8,14 @@ from face_utils import FaceUtils  # Assuming FaceUtils is moved to a separate fi
 
 
 class FaceSaver:
-    def __init__(self, face_detector, augmentation_pipeline, db_utils):
+    def __init__(self, face_detector, augmentation_pipeline, recognition_model, db_utils):
         self.face_detector = face_detector
         self.augmentation_pipeline = augmentation_pipeline
+        self.recognition_model = recognition_model
         self.db_utils = db_utils
+        self.face_db = {}
 
-    def save_face(self, name, img, face_directory, cap, num_images=10):
+    def save_face(self, name, number, img, face_directory, cap, num_images=10):
         try:
             detections, landmarks = self.face_detector.detect(
                 img, input_size=(128, 128), max_num=1
@@ -59,7 +61,7 @@ class FaceSaver:
                                 "No faces detected in the input image for additional images."
                             )
                             break
-                    self.db_utils.save_face_to_db(face_id, name, file_paths)
+                    self.db_utils.save_face_to_db(name, number, "FIST", file_paths)
                 else:
                     logging.warning("Failed to register face. No face detected.")
             else:

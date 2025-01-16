@@ -156,7 +156,7 @@ class AntiSpoofing:
             return False, "Error"
 
 class FaceTracker:
-    def __init__(self, detection_model_file, model, face_directory, db_path):
+    def __init__(self, detection_model_file, model, face_directory):
         self.face_labels = {}
         self.next_label = 1
 
@@ -169,10 +169,11 @@ class FaceTracker:
         )
         self.recognition_model.prepare(ctx_id=0)
         self.anti_spoofing = AntiSpoofing(self.face_detector)
-        self.face_db = self.load_face_database(face_directory)
+        self.db_utils = DatabaseUtils()
+        self.face_data = self.db_utils.load_faces_database()
+        self.face_db = self.load_faces()
         args = TrackerArgs()
         self.tracker = BYTETracker(args, frame_rate=args.fps)
-        self.db_utils = DatabaseUtils(db_path)
         self.last_logged_time = {}
         self.check_in_mode = True
         self.frame_skip = 2
@@ -182,7 +183,6 @@ class FaceTracker:
                 A.HorizontalFlip(p=0.5),
                 A.Rotate(limit=10, p=0.5),
                 A.RandomBrightnessContrast(p=0.5),
-                A.GaussNoise(p=0.5),
                 A.Affine(
                     scale=(0.9, 1.1),
                     translate_percent=(0.0625, 0.0625),
@@ -192,39 +192,24 @@ class FaceTracker:
             ]
         )
         self.face_saver = FaceSaver(
-            self.face_detector, self.augmentation_pipeline, self.db_utils
+            self.face_detector, self.augmentation_pipeline, self.recognition_model, self.db_utils
         )
 
     def record_attendance(self, name):
         current_time = time.time()
         status = "Check-In" if self.check_in_mode else "Check-Out"
-        if self.db_utils.should_log_attendance(name, status, current_time):
-            self.db_utils.log_attendance(name, status, current_time)
-            logging.info(f"Logged {status} for {name}")
-            self.last_logged_time[name] = current_time
-
-    def load_face_database(self, face_directory):
-        face_db = {}
-        for person_name in os.listdir(face_directory):
-            person_dir = os.path.join(face_directory, person_name)
-            if os.path.isdir(person_dir):
-                for filename in os.listdir(person_dir):
-                    if filename.endswith((".jpg", ".png")):
-                        image_path = os.path.join(person_dir, filename)
-                        img = cv2.imread(image_path)
-                        if img is None:
-                            continue
-                        face, success = FaceUtils.get_face_embedding(
-                            self.face_detector, self.recognition_model, img
-                        )
-                        if success:
-                            face_db[person_name] = face
-        return face_db
+        self.db_utils.log_attendance(current_time, status, student_id, subject_id)
+        logging.info(f"Logged {status} for {name}")
+        self.last_logged_time[name] = current_time
 
     def identify_faces(self, embeddings):
         best_match = "Unknown"
         highest_similarity = 0.0
         embeddings = np.squeeze(embeddings)
+        
+        if not self.face_db:
+            return "Unknown", 0.0
+
         for name, db_embedding in self.face_db.items():
             db_embedding = np.squeeze(db_embedding)
             similarity = cosine_similarity([db_embedding], [embeddings])[0][0]
@@ -236,6 +221,34 @@ class FaceTracker:
             return best_match, highest_similarity
         else:
             return "Unknown", highest_similarity
+    
+    def load_faces(self):
+        face_db = {}
+
+        for entry in self.face_data:
+            if 'faces' not in entry:
+                continue
+        
+            for image_path in entry['faces']:
+                person_name = os.path.basename(os.path.dirname(image_path))
+                img = cv2.imread(image_path)
+                if img is None:
+                    print(f"Failed to load image: {image_path}")
+                    continue
+                
+                face, success = FaceUtils.get_face_embedding(
+                    self.face_detector, self.recognition_model, img
+                )
+                if success:
+                    if person_name not in face_db:
+                        face_db[person_name] = []
+                        
+                    face_db[person_name] = face
+                    print(f"Face embedding loaded for {person_name} from {image_path}.")
+                else:
+                    print(f"Failed to process face embedding for: {image_path}")
+
+        return face_db
 
     def find_faces(self, frame):
         try:
@@ -322,7 +335,7 @@ class FaceTracker:
                         face_label = self.face_labels.get(tracker_id, "Unknown")
                         face_crop = frame[y1:y2, x1:x2]
 
-                        cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)  # Debugging: blue box
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
                         
                         futures.append(
                             executor.submit(
@@ -361,25 +374,25 @@ class FaceTracker:
             is_real, decision = self.anti_spoofing.liveness_check(face_crop, frame, bbox, face_label)
 
             if decision == "No Motion":
-                color = (0, 0, 255)  # Red for no motion
+                color = (0, 0, 255)
                 label = f"{face_label}: Fake (No Motion)"
             elif decision == "Low Clarity":
-                color = (0, 255, 255)  # Yellow for low clarity
+                color = (0, 255, 255)
                 label = f"{face_label}: Fake (Low Clarity)"
             elif decision == "Fake":
-                color = (0, 0, 255)  # Red for fake
+                color = (0, 0, 255)
                 label = f"{face_label}: Fake"
             elif decision == "Real":
                 face_embedding, success = self.get_face_embedding(face_crop)
                 if success:
                     name, similarity = self.identify_faces(face_embedding)
-                    color = (0, 255, 0)  # Green for real
+                    color = (0, 255, 0)
                     label = f"{name} ({similarity:.2f})" if name != "Unknown" else "Real"
                 else:
-                    color = (255, 255, 0)  # Cyan for undecided
+                    color = (255, 255, 0)
                     label = "Undecided"
             else:
-                color = (255, 255, 0)  # Cyan for errors or unknown
+                color = (255, 255, 0)
                 label = decision
 
             # Annotate the frame with bounding box and label
@@ -396,8 +409,7 @@ def main():
     detection_model_file = "weights/scrfd_2.5g_bnkps.onnx"
     model = "buffalo_l"
     face_directory = "faces"
-    db_path = "attendance.db"
-    tracker = FaceTracker(detection_model_file, model, face_directory, db_path)
+    tracker = FaceTracker(detection_model_file, model, face_directory)
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         logging.error("Error: Could not open webcam.")
@@ -418,8 +430,12 @@ def main():
         original_frame = frame.copy()
         annotated_frame = tracker.handle_frame(frame)
         if cv2.waitKey(1) & 0xFF == ord('s'):
+            number = input("Enter enrollment number: ")
             name = input("Enter name for the new face: ")
-            tracker.face_saver.save_face(name, original_frame, face_directory, cap)
+            tracker.face_saver.save_face(name, number, original_frame, face_directory, cap)
+            tracker.face_data = tracker.db_utils.load_faces_database()
+            tracker.face_db = tracker.load_faces()
+            
         if cv2.waitKey(1) & 0xFF == ord('c'):
             tracker.check_in_mode = not tracker.check_in_mode
             mode = "Check-In" if tracker.check_in_mode else "Check-Out"

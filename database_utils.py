@@ -1,63 +1,80 @@
-import sqlite3
+import mysql.connector
+from datetime import datetime
 import json
-import time
+import cv2
+import os
+from face_utils import FaceUtils
 
 class DatabaseUtils:
-    def __init__(self, db_path):
-        self.db_path = db_path
-        self.init_db()
+    def __init__(self):
+        self.db_config = db_config
 
-    def init_db(self):
-        conn = sqlite3.connect(self.db_path)
+    def log_attendance(self, created_at, status, student_id, subject_id):
+        conn = mysql.connector.connect(**self.db_config)
         cursor = conn.cursor()
+        cursor.execute("USE attendance_tracking")
+
         cursor.execute(
-            '''CREATE TABLE IF NOT EXISTS attendance (
-                          id INTEGER PRIMARY KEY AUTOINCREMENT,
-                          name TEXT NOT NULL,
-                          status TEXT NOT NULL,
-                          timestamp TEXT NOT NULL)'''
+            """
+            SELECT id FROM admin_system_attendance
+            WHERE created_at = %s AND student_id = %s AND subject_id = %s
+            """,
+            (created_at, student_id, subject_id),
         )
+        existing_record = cursor.fetchone()
+
+        if existing_record:
+            print(
+                "Attendance already logged for this student and subject on this date."
+            )
+        else:
+            cursor.execute(
+                """
+                INSERT INTO admin_system_attendance (created_at, status, student_id, subject_id)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (created_at, status, student_id, subject_id),
+            )
+            conn.commit()
+            print("Attendance logged successfully.")
+
+        conn.close()
+
+    def save_face_to_db(self, name, enrollment_number, faculty, file_paths):
+        conn = mysql.connector.connect(**self.db_config)
+        cursor = conn.cursor()
+        cursor.execute("USE attendance_tracking")
+
         cursor.execute(
-            '''CREATE TABLE IF NOT EXISTS faces (
-                          id TEXT PRIMARY KEY,
-                          name TEXT NOT NULL,
-                          file_paths TEXT NOT NULL,
-                          timestamp TEXT NOT NULL)'''
+            """
+            INSERT INTO admin_system_student (name, enrollment_number, faculty, faces)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (name, enrollment_number, faculty, json.dumps(file_paths)),
         )
+
         conn.commit()
         conn.close()
+        
+    def load_faces_database(self):
+        conn = mysql.connector.connect(**self.db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("USE attendance_tracking")
 
-    def should_log_attendance(self, name, status, current_time):
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT timestamp FROM attendance WHERE name = ? AND status = ? ORDER BY timestamp DESC LIMIT 1",
-            (name, status),
-        )
-        last_log = cursor.fetchone()
-        conn.close()
-        if last_log:
-            last_log_time = time.mktime(time.strptime(last_log[0], '%Y-%m-%d %H:%M:%S'))
-            if (current_time - last_log_time) < 300:
-                return False
-        return True
+        cursor.execute("SELECT faces FROM admin_system_student")
+        face_data = cursor.fetchall()
 
-    def log_attendance(self, name, status, current_time):
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO attendance (name, status, timestamp) VALUES (?, ?, ?)",
-            (name, status, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_time))),
-        )
-        conn.commit()
-        conn.close()
+        for face in face_data:
+            face['faces'] = json.loads(face['faces'])
 
-    def save_face_to_db(self, face_id, name, file_paths):
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO faces (id, name, file_paths, timestamp) VALUES (?, ?, ?, ?)",
-            (face_id, name, json.dumps(file_paths), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())),
-        )
-        conn.commit()
         conn.close()
+        return face_data
+
+
+db_config = {
+    'host': '127.0.0.1',
+    'user': 'root',
+    'password': '',
+    'database': 'attendance_tracking',
+    'port': 3306,
+}
