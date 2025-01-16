@@ -2,71 +2,73 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Documentation</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'assets/vendors/codemirror/codemirror.css' %}" />
-    <link rel="stylesheet" href="{% static 'assets/vendors/codemirror/ambiance.css' %}" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.45.0/theme/dracula.min.css">
-    <link rel="stylesheet" href="{% static 'assets/vendors/pwstabs/jquery.pwstabs.min.css' %}">
-    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <link rel="shortcut icon" href="{% static 'assets/images/favicon.png' %}" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Documentation</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="{% static 'assets/vendors/codemirror/codemirror.css' %}" />
+  <link rel="stylesheet" href="{% static 'assets/vendors/codemirror/ambiance.css' %}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.45.0/theme/dracula.min.css">
+  <link rel="stylesheet" href="{% static 'assets/vendors/pwstabs/jquery.pwstabs.min.css' %}">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+  <link rel="shortcut icon" href="{% static 'assets/images/favicon.png' %}" />
 </head>
+
 <body>
-    <div class="container-fluid documentation">
-        <div class="row">
-          <div class="col-md-3 col-xl-2 left-sidebar">
-            <div class="logo-wrapper">
-              <a href="{% url 'index' %}">
-                <img src="{% static 'assets/images/logo.svg' %}" alt="logo" class="logo">
-              </a>
+  <div class="container-fluid documentation">
+    <div class="row">
+      <div class="col-md-3 col-xl-2 left-sidebar">
+        <div class="logo-wrapper">
+          <a href="{% url 'index' %}">
+            <img src="{% static 'assets/images/logo.svg' %}" alt="logo" class="logo">
+          </a>
+        </div>
+        <h5 class="left-menu-title">Documentation</h5>
+        <ul class="left-menu">
+          <li><a href="#introduction"> Introduction </a></li>
+          <li><a href="#getting-started"> Getting started </a></li>
+          <li><a href="#basic-structure"> Basic structure </a></li>
+        </ul>
+        <h5 class="left-menu-title">Components</h5>
+        <ul class="left-menu">
+          <li><a href="#basic-ui"> Basic UI Elements </a></li>
+          <li><a href="#tables"> Tables </a></li>
+          <li><a href="#charts"> Charts </a></li>
+          <li><a href="#forms"> Forms </a></li>
+          <li><a href="#icons"> Icons </a></li>
+        </ul>
+        <h5 class="left-menu-title"><a class="text-body" href="#credits"> Credits </a></h5>
+        <a class="d-block mt-4 text-muted" target="_blank" href="{% url 'index' %}">Go to Home</a>
+      </div>
+      <div class="col-md-9 col-xl-10 main-panel">
+        <div class="main-panel-wrapper">
+          <div class="row">
+            <div class="col-12 mb-4">
+              <h2 class="mt-2 text-center font-weight-light text-uppercase">Documentation</h2>
             </div>
-            <h5 class="left-menu-title">Documentation</h5>
-            <ul class="left-menu">
-                <li><a href="#introduction"> Introduction </a></li>
-                <li><a href="#getting-started"> Getting started </a></li>
-                <li><a href="#basic-structure"> Basic structure </a></li>
-            </ul>
-            <h5 class="left-menu-title">Components</h5>
-            <ul class="left-menu">
-                <li><a href="#basic-ui"> Basic UI Elements </a></li>
-                <li><a href="#tables"> Tables </a></li>
-                <li><a href="#charts"> Charts </a></li>
-                <li><a href="#forms"> Forms </a></li>
-                <li><a href="#icons"> Icons </a></li>
-            </ul>
-            <h5 class="left-menu-title"><a class="text-body" href="#credits"> Credits </a></h5>            
-            <a class="d-block mt-4 text-muted" target="_blank" href="{% url 'index' %}">Go to Home</a>
-          </div>
-          <div class="col-md-9 col-xl-10 main-panel">
-            <div class="main-panel-wrapper">
-              <div class="row">
-                <div class="col-12 mb-4">
-                  <h2 class="mt-2 text-center font-weight-light text-uppercase">Documentation</h2>
+            <div class="col-12 grid-margin" id="introduction">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="mb-4">Introduction</h3>
+                  <p>Corona-free is a responsive HTML template that is based on the CSS framework Bootstrap 4 and it is built with Sass. Sass compiler makes it easier to code and customize. If you are unfamiliar with Bootstrap or Sass, visit their
+                    website and read through the documentation. All of Bootstrap components have been modified to fit the style of Corona-free and provide a consistent look throughout the template.</p>
+                  <p>Before you start working with the template, we suggest you go through the pages that are bundled with the theme. Most of the template example pages contain quick tips on how to create or use a component which can
+                    be really helpful when you need to create something on the fly.</p>
+                  <p class="d-inline"><strong>Note</strong>: We are trying our best to document how to use the template. If you think that something is missing from the documentation, please do not hesitate to tell us about it. If you have any questions or issues regarding this theme please use Envato support form on our profile or email us at <a class="d-inline text-info" href="mailto:support@bootstrapdash.com">support@bootstrapdash.com</a></p>
                 </div>
-                <div class="col-12 grid-margin" id="introduction">
-                  <div class="card">
-                      <div class="card-body">
-                          <h3 class="mb-4">Introduction</h3>
-                          <p>Corona-free is a responsive HTML template that is based on the CSS framework Bootstrap 4 and it is built with Sass. Sass compiler makes it easier to code and customize. If you are unfamiliar with Bootstrap or Sass, visit their
-                              website and read through the documentation. All of Bootstrap components have been modified to fit the style of Corona-free and provide a consistent look throughout the template.</p>
-                          <p>Before you start working with the template, we suggest you go through the pages that are bundled with the theme. Most of the template example pages contain quick tips on how to create or use a component which can
-                              be really helpful when you need to create something on the fly.</p>
-                          <p class="d-inline"><strong>Note</strong>: We are trying our best to document how to use the template. If you think that something is missing from the documentation, please do not hesitate to tell us about it. If you have any questions or issues regarding this theme please use Envato support form on our profile or email us at <a class="d-inline text-info" href="mailto:support@bootstrapdash.com">support@bootstrapdash.com</a></p>
-                      </div>
-                  </div>
-                </div>
-                <div class="col-12 grid-margin" id="getting-started">
-                    <div class="card">
-                        <div class="card-body">
-                            <h3 class="mb-4">Getting started</h3>
-                            <p>You can directly use the compiled and ready-to-use the version of the template. But in case you plan to customize the template extensively the template allows you to do so.</p>
-                            <p>Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations:</p>
-                            <textarea class="shell-mode">
+              </div>
+            </div>
+            <div class="col-12 grid-margin" id="getting-started">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="mb-4">Getting started</h3>
+                  <p>You can directly use the compiled and ready-to-use the version of the template. But in case you plan to customize the template extensively the template allows you to do so.</p>
+                  <p>Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations:</p>
+                  <textarea class="shell-mode">
 Corona/
 ├ jquery/
   ├ documentation/
@@ -86,52 +88,52 @@ Corona/
       ├ index.html
       ├ package.json
   ├ CHANGELOG.md</textarea>
-                            <p class="mt-1">Note: The root folder denoted further in this documentation refers to the 'template' folder inside the downloaded folder</p>
-                            <div class="alert alert-success mt-4 d-flex align-items-center" role="alert">
-                              <i class="ti-info-alt"></i>
-                              <p>We have bundled up the vendor files needed for demo purpose into a folder 'vendors', you may not need all those vendors in your application.  If you want to make any change in the vendor package files, you need to change the src path for related tasks in the file gulpfile.js and run the task <code>bundleVendors</code> to rebuild the vendor files.</p>
-                            </div>
-                            <hr class="mt-5">
-                            <h4 class="mt-4">Installation</h4>
-                            <p class="mb-0">
-                              You need to install package files/Dependencies for this project if you want to customize it. To do this, you must have <span class="font-weight-bold">node and npm</span> installed in your computer.
-                            </p>
-                            <p class="mb-0">Installation guide of the node can be found <a href="https://nodejs.org/en/" target="_blank">here</a>. As npm comes bundled with a node, a separate installation of npm is not needed.</p>
-                            <p>
-                                If you have installed them, just go to the root folder and run the following command in your command prompt or terminal (for the mac users).
-                            </p>
-                            <textarea class="shell-mode">
+                  <p class="mt-1">Note: The root folder denoted further in this documentation refers to the 'template' folder inside the downloaded folder</p>
+                  <div class="alert alert-success mt-4 d-flex align-items-center" role="alert">
+                    <i class="ti-info-alt"></i>
+                    <p>We have bundled up the vendor files needed for demo purpose into a folder 'vendors', you may not need all those vendors in your application. If you want to make any change in the vendor package files, you need to change the src path for related tasks in the file gulpfile.js and run the task <code>bundleVendors</code> to rebuild the vendor files.</p>
+                  </div>
+                  <hr class="mt-5">
+                  <h4 class="mt-4">Installation</h4>
+                  <p class="mb-0">
+                    You need to install package files/Dependencies for this project if you want to customize it. To do this, you must have <span class="font-weight-bold">node and npm</span> installed in your computer.
+                  </p>
+                  <p class="mb-0">Installation guide of the node can be found <a href="https://nodejs.org/en/" target="_blank">here</a>. As npm comes bundled with a node, a separate installation of npm is not needed.</p>
+                  <p>
+                    If you have installed them, just go to the root folder and run the following command in your command prompt or terminal (for the mac users).
+                  </p>
+                  <textarea class="shell-mode">
   npm install</textarea>
-                            <p class="mt-4">
-                              This will install the dev dependencies in the local <span class="font-weight-bold">node_modules</span> folder in your root directory.
-                            </p>
-                            <p class="mt-2">
-                              Then you will need to install <span class="font-weight-bold">Gulp</span>. We use the Gulp task manager for the development processes. Gulp will watch for changes to the SCSS files and automatically compile the files to CSS.
-                            </p>
-                            <p>Getting started with Gulp is pretty simple. The <a href="https://gulpjs.com/" target="_blank">Gulp</a> site is a great place to get information on installing Gulp if you need more information. You need to first install Gulp-cli in your machine using the below command.</p>
-                            <textarea class="shell-mode">
+                  <p class="mt-4">
+                    This will install the dev dependencies in the local <span class="font-weight-bold">node_modules</span> folder in your root directory.
+                  </p>
+                  <p class="mt-2">
+                    Then you will need to install <span class="font-weight-bold">Gulp</span>. We use the Gulp task manager for the development processes. Gulp will watch for changes to the SCSS files and automatically compile the files to CSS.
+                  </p>
+                  <p>Getting started with Gulp is pretty simple. The <a href="https://gulpjs.com/" target="_blank">Gulp</a> site is a great place to get information on installing Gulp if you need more information. You need to first install Gulp-cli in your machine using the below command.</p>
+                  <textarea class="shell-mode">
   npm install -g gulp-cli</textarea>
-                            <p class="mt-4">This installs Gulp-cli globally to your machine. The other thing that Gulp requires, which, is really what does all the work, is the gulpfile.js. In this file, you set up all of your tasks that you will run.</p>
-                            <p>Don't worry. We have this file already created for you!</p>
-                            <p>To run this project in development mode enter the following command below. This will start the file watch by gulp and whenever a file is modified, the SCSS files will be compiled to create the CSS file.</p>
-  <textarea class="shell-mode">
-  gulp serve</textarea>           
-                            <div class="alert alert-warning mt-4" role="alert">
-                              <i class="ti-info-alt-outline"></i>It is important to run <code>gulp serve</code> command from the directory where the gulpfile.js is located.
-                            </div>
-                        </div>
-                    </div>
+                  <p class="mt-4">This installs Gulp-cli globally to your machine. The other thing that Gulp requires, which, is really what does all the work, is the gulpfile.js. In this file, you set up all of your tasks that you will run.</p>
+                  <p>Don't worry. We have this file already created for you!</p>
+                  <p>To run this project in development mode enter the following command below. This will start the file watch by gulp and whenever a file is modified, the SCSS files will be compiled to create the CSS file.</p>
+                  <textarea class="shell-mode">
+  gulp serve</textarea>
+                  <div class="alert alert-warning mt-4" role="alert">
+                    <i class="ti-info-alt-outline"></i>It is important to run <code>gulp serve</code> command from the directory where the gulpfile.js is located.
+                  </div>
                 </div>
-                <div class="col-12 grid-margin" id="basic-structure">
-                  <div class="card">
-                    <div class="card-body">
-                      <h3 class="card-title">Basic structure</h3>
-                      <p class="mb-5"> The below snippet shows the basic HTML structure of Corona-free. Please note that all the stylesheets and script files in the below snippet should be included to render Corona-free styles. </p>
-                      <div class="demo-tabs">
-                          <!-- Tabs Starts -->
-                          <div data-pws-tab="Vertical Layout" data-pws-tab-name="Vertical Layout">
-                            <p>This section contains code of Vertical Layout layout. For other layouts in vertical mode like boxed, icon-menu etc., you can follow the snippet same as below, but you have to just add the appropriate optional class to the body. More details of the classes are given in <a href="#options">Options</a> section</p>
-<textarea class="multiple-codes mt-5">
+              </div>
+            </div>
+            <div class="col-12 grid-margin" id="basic-structure">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title">Basic structure</h3>
+                  <p class="mb-5"> The below snippet shows the basic HTML structure of Corona-free. Please note that all the stylesheets and script files in the below snippet should be included to render Corona-free styles. </p>
+                  <div class="demo-tabs">
+                    <!-- Tabs Starts -->
+                    <div data-pws-tab="Vertical Layout" data-pws-tab-name="Vertical Layout">
+                      <p>This section contains code of Vertical Layout layout. For other layouts in vertical mode like boxed, icon-menu etc., you can follow the snippet same as below, but you have to just add the appropriate optional class to the body. More details of the classes are given in <a href="#options">Options</a> section</p>
+                      <textarea class="multiple-codes mt-5">
   <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -173,7 +175,7 @@ Corona/
                   <span class="count bg-success"></span>
                 </div>
                 <div class="profile-name">
-                  <h5 class="mb-0 font-weight-normal">Henry Klein</h5>
+                  <h5 class="mb-0 font-weight-normal">{{ user.username }}</h5>
                   <span>Gold Member</span>
                 </div>
               </div>
@@ -458,7 +460,7 @@ Corona/
                 <a class="nav-link" id="profileDropdown" href="#" data-toggle="dropdown">
                   <div class="navbar-profile">
                     <img class="img-xs rounded-circle" src="{% static 'assets/images/faces/face15.jpg' %}" alt="">
-                    <p class="mb-0 d-none d-sm-block navbar-profile-name">Henry Klein</p>
+                    <p class="mb-0 d-none d-sm-block navbar-profile-name">{{ user.username }}</p>
                     <i class="mdi mdi-menu-down d-none d-sm-block"></i>
                   </div>
                 </a>
@@ -1196,32 +1198,32 @@ Corona/
   </body>
 </html>
 </textarea>
-                          </div>
-                          <!-- Tabs Ends -->
-                        </div>
                     </div>
+                    <!-- Tabs Ends -->
                   </div>
                 </div>
-                <div class="col-12 grid-margin">
-                  <div class="card">
-                    <div class="card-body">
-                      <!-- New Docs Starts Here -->
-                      <h3 class="mb-4">Components</h3>
-                      <hr class="hr" id="basic-ui">
-                      <h4 class="my-4">Basic UI Elements</h4>
-                      <div class="demo-tabs">
-                        <!-- Tabs Starts -->
-                        <div data-pws-tab="Button" data-pws-tab-name="Button">
-                          <h5 class="mb-2 mt-4">Button with single color</h5>
-                          <div class="fluid-container py-4">
-                            <button type="button" class="btn btn-primary">Primary</button>
-                            <button type="button" class="btn btn-secondary">Secondary</button>
-                            <button type="button" class="btn btn-success">Success</button>
-                            <button type="button" class="btn btn-info">Info</button>
-                            <button type="button" class="btn btn-warning">Warning</button>
-                            <button type="button" class="btn btn-danger">Danger</button>
-                          </div>
-                          <textarea class="multiple-codes">
+              </div>
+            </div>
+            <div class="col-12 grid-margin">
+              <div class="card">
+                <div class="card-body">
+                  <!-- New Docs Starts Here -->
+                  <h3 class="mb-4">Components</h3>
+                  <hr class="hr" id="basic-ui">
+                  <h4 class="my-4">Basic UI Elements</h4>
+                  <div class="demo-tabs">
+                    <!-- Tabs Starts -->
+                    <div data-pws-tab="Button" data-pws-tab-name="Button">
+                      <h5 class="mb-2 mt-4">Button with single color</h5>
+                      <div class="fluid-container py-4">
+                        <button type="button" class="btn btn-primary">Primary</button>
+                        <button type="button" class="btn btn-secondary">Secondary</button>
+                        <button type="button" class="btn btn-success">Success</button>
+                        <button type="button" class="btn btn-info">Info</button>
+                        <button type="button" class="btn btn-warning">Warning</button>
+                        <button type="button" class="btn btn-danger">Danger</button>
+                      </div>
+                      <textarea class="multiple-codes">
     <div class="row">
       <button type="button" class="btn btn-primary">Primary</button>
       <button type="button" class="btn btn-secondary">Secondary</button>
@@ -1231,16 +1233,16 @@ Corona/
       <button type="button" class="btn btn-danger">Danger</button>
     </div>
                                       </textarea>
-                          <h5 class="mb-2 mt-4">Outlined</h5>
-                          <div class="fluid-container py-4">
-                            <button type="button" class="btn btn-outline-primary">Primary</button>
-                            <button type="button" class="btn btn-outline-secondary">Secondary</button>
-                            <button type="button" class="btn btn-outline-success">Success</button>
-                            <button type="button" class="btn btn-outline-info">Info</button>
-                            <button type="button" class="btn btn-outline-warning">Warning</button>
-                            <button type="button" class="btn btn-outline-danger">Danger</button>
-                          </div>
-                          <textarea class="multiple-codes">
+                      <h5 class="mb-2 mt-4">Outlined</h5>
+                      <div class="fluid-container py-4">
+                        <button type="button" class="btn btn-outline-primary">Primary</button>
+                        <button type="button" class="btn btn-outline-secondary">Secondary</button>
+                        <button type="button" class="btn btn-outline-success">Success</button>
+                        <button type="button" class="btn btn-outline-info">Info</button>
+                        <button type="button" class="btn btn-outline-warning">Warning</button>
+                        <button type="button" class="btn btn-outline-danger">Danger</button>
+                      </div>
+                      <textarea class="multiple-codes">
     <div class="row">
       <button type="button" class="btn btn-outline-primary">Primary</button>
       <button type="button" class="btn btn-outline-secondary">Secondary</button>
@@ -1250,77 +1252,77 @@ Corona/
       <button type="button" class="btn btn-outline-danger">Danger</button>
     </div>
                                       </textarea>
-                          <h5 class="mb-2 mt-4">Sizes</h5>
-                          <div class="fluid-container py-4">
-                            <button type="button" class="btn btn-primary btn-lg">Large</button>
-                            <button type="button" class="btn btn-primary">Medium</button>
-                            <button type="button" class="btn btn-primary btn-sm">Small</button>
-                          </div>
-                          <textarea class="multiple-codes">
+                      <h5 class="mb-2 mt-4">Sizes</h5>
+                      <div class="fluid-container py-4">
+                        <button type="button" class="btn btn-primary btn-lg">Large</button>
+                        <button type="button" class="btn btn-primary">Medium</button>
+                        <button type="button" class="btn btn-primary btn-sm">Small</button>
+                      </div>
+                      <textarea class="multiple-codes">
     <div class="row">
       <button type="button" class="btn btn-primary btn-lg">Small</button>
       <button type="button" class="btn btn-secondary">Medium</button>
       <button type="button" class="btn btn-success btn-sm">Large</button>
     </div>
                                       </textarea>
-                        </div>
-                        <!-- Tabs Ends -->
-                        <!-- Tabs Starts -->
-                        <div data-pws-tab="Dropdown" data-pws-tab-name="Dropdown">
-                          <h5 class="mb-2 mt-4">Bootstrap Dropdown</h5>
-                          <div class="fluid-container py-4">
-                            <div class="btn-group">
-                              <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
-                              <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Separated link</a>
-                              </div>
-                            </div>
-                            <div class="btn-group">
-                              <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
-                              <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Separated link</a>
-                              </div>
-                            </div>
-                            <div class="btn-group">
-                              <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
-                              <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Separated link</a>
-                              </div>
-                            </div>
-                            <div class="btn-group">
-                              <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
-                              <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Separated link</a>
-                              </div>
-                            </div>
-                            <div class="btn-group">
-                              <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
-                              <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Separated link</a>
-                              </div>
-                            </div>
+                    </div>
+                    <!-- Tabs Ends -->
+                    <!-- Tabs Starts -->
+                    <div data-pws-tab="Dropdown" data-pws-tab-name="Dropdown">
+                      <h5 class="mb-2 mt-4">Bootstrap Dropdown</h5>
+                      <div class="fluid-container py-4">
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
                           </div>
-                          <textarea class="multiple-codes">
+                        </div>
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
+                          </div>
+                        </div>
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
+                          </div>
+                        </div>
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
+                          </div>
+                        </div>
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
+                          </div>
+                        </div>
+                      </div>
+                      <textarea class="multiple-codes">
     <div class="btn-group">
       <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
       Action
@@ -1385,60 +1387,60 @@ Corona/
       </div>
     </div>
                                       </textarea>
-                          <h5 class="mb-2 mt-4">Dropdown Outlined</h5>
-                          <div class="fluid-container py-4">
-                            <div class="btn-group">
-                              <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
-                              <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Separated link</a>
-                              </div>
-                            </div>
-                            <div class="btn-group">
-                              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
-                              <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Separated link</a>
-                              </div>
-                            </div>
-                            <div class="btn-group">
-                              <button type="button" class="btn btn-outline-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
-                              <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Separated link</a>
-                              </div>
-                            </div>
-                            <div class="btn-group">
-                              <button type="button" class="btn btn-outline-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
-                              <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Separated link</a>
-                              </div>
-                            </div>
-                            <div class="btn-group">
-                              <button type="button" class="btn btn-outline-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
-                              <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Separated link</a>
-                              </div>
-                            </div>
+                      <h5 class="mb-2 mt-4">Dropdown Outlined</h5>
+                      <div class="fluid-container py-4">
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
                           </div>
-                          <textarea class="multiple-codes">
+                        </div>
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
+                          </div>
+                        </div>
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-outline-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
+                          </div>
+                        </div>
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-outline-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
+                          </div>
+                        </div>
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-outline-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Separated link</a>
+                          </div>
+                        </div>
+                      </div>
+                      <textarea class="multiple-codes">
     <div class="btn-group">
       <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
       Action
@@ -1503,18 +1505,18 @@ Corona/
       </div>
     </div>
                                     </textarea>
-                        </div>
-                        <!-- Tabs Ends -->
-                      </div>
-                      <!-- demo-tabs container ends -->
-                      <!--Tables starts-->
-                      <hr class="hr" id="tables">
-                      <h4 class="my-4">Tables</h4>
-                      <div class="demo-tabs">
-                        <!-- Basic table starts -->
-                        <div data-pws-tab="basic-table" data-pws-tab-name="Basic table">
-                          <p> To create a basic Twitter Bootstrap table, add the following code. </p>
-                          <textarea class="multiple-codes">
+                    </div>
+                    <!-- Tabs Ends -->
+                  </div>
+                  <!-- demo-tabs container ends -->
+                  <!--Tables starts-->
+                  <hr class="hr" id="tables">
+                  <h4 class="my-4">Tables</h4>
+                  <div class="demo-tabs">
+                    <!-- Basic table starts -->
+                    <div data-pws-tab="basic-table" data-pws-tab-name="Basic table">
+                      <p> To create a basic Twitter Bootstrap table, add the following code. </p>
+                      <textarea class="multiple-codes">
     <table class="table">
       <thead>
       <tr class="">
@@ -1546,27 +1548,28 @@ Corona/
       </tbody>
     </table>
     </textarea>
-                        </div>
-                        <!-- Basic table Ends -->
-                      </div>
-                      <!--Tables ends-->
-                      <!-- New Docs Starts Here -->
-                      <!-- New Docs Ends Here -->
-                      <hr class="hr" id="charts">
-                      <h4 class="my-4">Charts</h4>
-                      <div class="demo-tabs">
-                        <div data-pws-tab="anynameyouwant1" data-pws-tab-name="Chart.js">
-                          <p>
-                            <a href="http://www.chartjs.org/">Chart.js</a> is a simple yet flexible JavaScript charting for designers & developers. </p>
-                          <h5 class="mt-5 mb-4">Usage</h5>
-                          <p> To use Chart.js in your application, include the following files in &lt;head&gt;. </p>
-                          <textarea class="multiple-codes">
+                    </div>
+                    <!-- Basic table Ends -->
+                  </div>
+                  <!--Tables ends-->
+                  <!-- New Docs Starts Here -->
+                  <!-- New Docs Ends Here -->
+                  <hr class="hr" id="charts">
+                  <h4 class="my-4">Charts</h4>
+                  <div class="demo-tabs">
+                    <div data-pws-tab="anynameyouwant1" data-pws-tab-name="Chart.js">
+                      <p>
+                        <a href="http://www.chartjs.org/">Chart.js</a> is a simple yet flexible JavaScript charting for designers & developers.
+                      </p>
+                      <h5 class="mt-5 mb-4">Usage</h5>
+                      <p> To use Chart.js in your application, include the following files in &lt;head&gt;. </p>
+                      <textarea class="multiple-codes">
     <link rel="stylesheet" href="path-to/node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.min.css" /></textarea>
-                          <p> and the following script files in &lt;body&gt;. </p>
-                          <textarea class="multiple-codes">
+                      <p> and the following script files in &lt;body&gt;. </p>
+                      <textarea class="multiple-codes">
     <script src="path-to/node_modules/chart.js/dist/Chart.min.js"></script></textarea>
-                          <p> To create a simple chart, add the following code: </p>
-                          <textarea class="multiple-codes">
+                      <p> To create a simple chart, add the following code: </p>
+                      <textarea class="multiple-codes">
     <canvas id="lineChart" style="height:250px"></canvas>
     
     <script>
@@ -1621,17 +1624,17 @@ Corona/
         });
       }
     </script></textarea>
-                        </div>
-                      </div>
-                      <!-- New Docs Ends Here -->
-                      <!--Forms starts-->
-                      <hr class="hr" id="forms">
-                      <h4 class="my-4">Forms</h4>
-                      <div class="demo-tabs">
-                        <!-- Basic elements Starts -->
-                        <div data-pws-tab="basic-elements" data-pws-tab-name="Basic elements">
-                          <p> The basic form elements can be added to your application as below: </p>
-                          <textarea class="multiple-codes">
+                    </div>
+                  </div>
+                  <!-- New Docs Ends Here -->
+                  <!--Forms starts-->
+                  <hr class="hr" id="forms">
+                  <h4 class="my-4">Forms</h4>
+                  <div class="demo-tabs">
+                    <!-- Basic elements Starts -->
+                    <div data-pws-tab="basic-elements" data-pws-tab-name="Basic elements">
+                      <p> The basic form elements can be added to your application as below: </p>
+                      <textarea class="multiple-codes">
     <form class="forms-sample">
         <div class="form-group">
             <label for="exampleInputEmail1">Email address</label>
@@ -1682,115 +1685,117 @@ Corona/
             <button type="submit" class="btn btn-primary">Submit</button>
         </div>
     </form></textarea>
-                        </div>
-                        <!-- Basic elements Ends -->
-                      </div>
-                      <!--Forms ends-->
-                      <!--Icons starts-->
-                      <hr class="hr" id="icons">
-                      <h4 class="my-4">Icons</h4>
-                      <div class="demo-tabs">
-                        <!-- MDI icon Starts -->
-                        <div data-pws-tab="mdi-icon" data-pws-tab-name="Material Icons">
-                          <p>
-                            <a href="https://materialdesignicons.com/">Material Design Icons</a> growing icon collection allows designers and developers targeting various platforms to download icons in the format, color and size they need for any project. </p>
-                          <h5 class="mt-5 mb-4">Usage</h5>
-                          <p> To use Material Design Icons in your application, include the following files in &lt;head&gt;. </p>
-                          <textarea class="multiple-codes">
+                    </div>
+                    <!-- Basic elements Ends -->
+                  </div>
+                  <!--Forms ends-->
+                  <!--Icons starts-->
+                  <hr class="hr" id="icons">
+                  <h4 class="my-4">Icons</h4>
+                  <div class="demo-tabs">
+                    <!-- MDI icon Starts -->
+                    <div data-pws-tab="mdi-icon" data-pws-tab-name="Material Icons">
+                      <p>
+                        <a href="https://materialdesignicons.com/">Material Design Icons</a> growing icon collection allows designers and developers targeting various platforms to download icons in the format, color and size they need for any project.
+                      </p>
+                      <h5 class="mt-5 mb-4">Usage</h5>
+                      <p> To use Material Design Icons in your application, include the following files in &lt;head&gt;. </p>
+                      <textarea class="multiple-codes">
     <link rel="stylesheet" href="path-to/node_modules/mdi/css/materialdesignicons.min.css"/></textarea>
-                          <p> To generate an icon, add the following code: </p>
-                          <textarea class="multiple-codes">
+                      <p> To generate an icon, add the following code: </p>
+                      <textarea class="multiple-codes">
     <i class="mdi mdi-bell"></i>
                                                 </textarea>
-                        </div>
-                        <!-- MDI icon Ends -->
-                      </div>
-                      <!--icons ends-->
-                      <!-- New Docs Ends Here -->
-                      <!-- New Docs Ends Here -->
-                    </div> <!-- Card Block Ends Here -->
+                    </div>
+                    <!-- MDI icon Ends -->
                   </div>
-                </div>
-                <div class="col-12 grid-margin credits" id="credits">
-                  <div class="card">
-                    <div class="card-body">
-                      <h3 class="mb-4">Credits</h3>
-                      <p>We have used the following plugins in Corona-free</p>
-                      <div class="row">
-                        <div class="col-12 col-md-6">
-                          <ul class="credit-list">
-                            <li>
-                              <p>Bootstrap</p> <a href="https://getbootstrap.com/" target="_blank">https://getbootstrap.com/</a>
-                            </li>
-                            <li>
-                              <p>Chart.js</p> <a href="https://www.chartjs.org/" target="_blank">https://www.chartjs.org/</a>
-                            </li>
-                            <li>
-                              <p>Codemirror</p> <a href="https://codemirror.net/" target="_blank">https://codemirror.net/</a>
-                            </li>
-                            <li>
-                              <p>Flag icons</p> <a href="http://lipis.github.io/flag-icon-css/" target="_blank">http://lipis.github.io/flag-icon-css/</a>
-                            </li>
-                            <li>
-                              <p>Gulp</p> <a href="https://gulpjs.com/" target="_blank">https://gulpjs.com/</a>
-                            </li>
-                            <li>
-                              <p>JQuery</p> <a href="https://jquery.com/" target="_blank">https://jquery.com/</a>
-                            </li>
-                            <li>
-                              <p>JVector Map</p> <a href="http://jvectormap.com/" target="_blank">http://jvectormap.com/</a>
-                            </li>
-                            <li>
-                              <p>Material Design Icons</p> <a href="https://materialdesignicons.com/" target="_blank">https://materialdesignicons.com/</a>
-                            </li>
-                            <li>
-                              <p>Moment.js</p> <a href="https://momentjs.com/" target="_blank">https://momentjs.com/</a>
-                            </li>
-                          </ul>
-                        </div>
-                        <div class="col-12 col-md-6">
-                          <ul class="credit-list">
-                            <li>
-                              <p>Owl carousel</p> <a href="https://owlcarousel2.github.io/OwlCarousel2/docs/started-welcome.html" target="_blank">https://owlcarousel2.github.io/OwlCarousel2/docs/started-welcome.html</a>
-                            </li>
-                            <li>
-                              <p>Perfect scrollbar</p> <a href="http://utatti.github.io/perfect-scrollbar/" target="_blank">http://utatti.github.io/perfect-scrollbar/</a>
-                            </li>
-                            <li>
-                              <p>Popper.js</p> <a href="https://popper.js.org/" target="_blank">https://popper.js.org/</a>
-                            </li>
-                            <li>
-                              <p>Progressbar.js</p> <a href="https://progressbarjs.readthedocs.io/en/latest/" target="_blank">https://progressbarjs.readthedocs.io</a>
-                            </li>
-                            <li>
-                              <p>PWS Tabs</p> <a href="https://alexchizhov.com/pwstabs/" target="_blank">https://alexchizhov.com/pwstabs/</a>
-                            </li>
-                            <li>
-                              <p>Select 2</p> <a href="https://select2.org/" target="_blank">https://select2.org/</a>
-                            </li>    
-                            <li>
-                              <p>TWBS pagination</p> <a href="https://esimakin.github.io/twbs-pagination/" target="_blank">https://esimakin.github.io/twbs-pagination/</a>
-                            </li>
-                            <li>
-                              <p>Typeahead</p> <a href="https://twitter.github.io/typeahead.js/" target="_blank">https://twitter.github.io/typeahead.js/</a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
+                  <!--icons ends-->
+                  <!-- New Docs Ends Here -->
+                  <!-- New Docs Ends Here -->
+                </div> <!-- Card Block Ends Here -->
+              </div>
+            </div>
+            <div class="col-12 grid-margin credits" id="credits">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="mb-4">Credits</h3>
+                  <p>We have used the following plugins in Corona-free</p>
+                  <div class="row">
+                    <div class="col-12 col-md-6">
+                      <ul class="credit-list">
+                        <li>
+                          <p>Bootstrap</p> <a href="https://getbootstrap.com/" target="_blank">https://getbootstrap.com/</a>
+                        </li>
+                        <li>
+                          <p>Chart.js</p> <a href="https://www.chartjs.org/" target="_blank">https://www.chartjs.org/</a>
+                        </li>
+                        <li>
+                          <p>Codemirror</p> <a href="https://codemirror.net/" target="_blank">https://codemirror.net/</a>
+                        </li>
+                        <li>
+                          <p>Flag icons</p> <a href="http://lipis.github.io/flag-icon-css/" target="_blank">http://lipis.github.io/flag-icon-css/</a>
+                        </li>
+                        <li>
+                          <p>Gulp</p> <a href="https://gulpjs.com/" target="_blank">https://gulpjs.com/</a>
+                        </li>
+                        <li>
+                          <p>JQuery</p> <a href="https://jquery.com/" target="_blank">https://jquery.com/</a>
+                        </li>
+                        <li>
+                          <p>JVector Map</p> <a href="http://jvectormap.com/" target="_blank">http://jvectormap.com/</a>
+                        </li>
+                        <li>
+                          <p>Material Design Icons</p> <a href="https://materialdesignicons.com/" target="_blank">https://materialdesignicons.com/</a>
+                        </li>
+                        <li>
+                          <p>Moment.js</p> <a href="https://momentjs.com/" target="_blank">https://momentjs.com/</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <ul class="credit-list">
+                        <li>
+                          <p>Owl carousel</p> <a href="https://owlcarousel2.github.io/OwlCarousel2/docs/started-welcome.html" target="_blank">https://owlcarousel2.github.io/OwlCarousel2/docs/started-welcome.html</a>
+                        </li>
+                        <li>
+                          <p>Perfect scrollbar</p> <a href="http://utatti.github.io/perfect-scrollbar/" target="_blank">http://utatti.github.io/perfect-scrollbar/</a>
+                        </li>
+                        <li>
+                          <p>Popper.js</p> <a href="https://popper.js.org/" target="_blank">https://popper.js.org/</a>
+                        </li>
+                        <li>
+                          <p>Progressbar.js</p> <a href="https://progressbarjs.readthedocs.io/en/latest/" target="_blank">https://progressbarjs.readthedocs.io</a>
+                        </li>
+                        <li>
+                          <p>PWS Tabs</p> <a href="https://alexchizhov.com/pwstabs/" target="_blank">https://alexchizhov.com/pwstabs/</a>
+                        </li>
+                        <li>
+                          <p>Select 2</p> <a href="https://select2.org/" target="_blank">https://select2.org/</a>
+                        </li>
+                        <li>
+                          <p>TWBS pagination</p> <a href="https://esimakin.github.io/twbs-pagination/" target="_blank">https://esimakin.github.io/twbs-pagination/</a>
+                        </li>
+                        <li>
+                          <p>Typeahead</p> <a href="https://twitter.github.io/typeahead.js/" target="_blank">https://twitter.github.io/typeahead.js/</a>
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>            
+            </div>
           </div>
         </div>
+      </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="{% static 'assets/vendors/codemirror/codemirror.js' %}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.45.0/mode/ruby/ruby.min.js"></script>
-    <script src="{% static 'assets/vendors/pwstabs/jquery.pwstabs.min.js' %}"></script>
-    <script src="{% static 'script.js' %}"></script>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="{% static 'assets/vendors/codemirror/codemirror.js' %}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.45.0/mode/ruby/ruby.min.js"></script>
+  <script src="{% static 'assets/vendors/pwstabs/jquery.pwstabs.min.js' %}"></script>
+  <script src="{% static 'script.js' %}"></script>
 </body>
+
 </html>

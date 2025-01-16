@@ -174,7 +174,7 @@ class FaceTracker:
         self.recognition_model.prepare(ctx_id=0)
         self.anti_spoofing = AntiSpoofing(self.face_detector)
         self.db_utils = DatabaseUtils()
-        self.face_data = self.db_utils.load_faces_database(self.subject_id)
+        self.face_data = self.db_utils.load_faces_database(subject_id)
         self.face_db = self.load_faces()
         args = TrackerArgs()
         self.tracker = BYTETracker(args, frame_rate=args.fps)
@@ -415,7 +415,11 @@ class FaceTracker:
 
 
 def main():
-    subject_id = 3    
+    parser = argparse.ArgumentParser(description="Face Recognition Script")
+    parser.add_argument("subject_id", type=int, help="ID of the subject")
+    args = parser.parse_args()
+
+    subject_id = args.subject_id    
         
     detection_model_file = os.path.join(BASE_DIR, "weights/scrfd_2.5g_bnkps.onnx")
     model = "buffalo_l"

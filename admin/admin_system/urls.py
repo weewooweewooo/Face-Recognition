@@ -8,12 +8,11 @@ from . import enrollment_views
 urlpatterns = [
     path('', views.login_view, name='login'),
     path('dashboard/', views.dashboard, name='dashboard'),
-    path('register/', views.register, name='register'),
-    path('documentation/', views.documentation, name='documentation'),
     
     # Attendance URLs
     path('attendance/', attendance_views.attendance, name='attendance'),
-    path('attendance_subject/<int:subject_id>', attendance_views.attendance_subject, name='attendance_subject'),
+    path('attendance_subject/<int:subject_id>/', attendance_views.attendance_subject, name='attendance_subject'),
+    path('face_recognition/<int:subject_id>/', attendance_views.face_recognition, name='face_recognition'),
     
     # Management URLs
     path('management/', management_views.user_management, name='management'),
@@ -29,7 +28,6 @@ urlpatterns = [
     path('enrollment/', enrollment_views.enrollment, name='enrollment'),
     path('add_enrollment/<int:student_id>', enrollment_views.add_enrollment, name='add_enrollment'),
     path('delete_enrollment/<int:enrollment_id>', enrollment_views.delete_enrollment, name='delete_enrollment'),
-    
     
     path('profile/', views.profile, name='profile'),
     path('logout/', views.logout_view, name='logout'),

@@ -28,10 +28,7 @@
                 </div>
                 <div class="form-group">
                   <label>Password *</label>
-                  <input type="text" name="password" class="form-control p_input">
-                </div>
-                <div class="form-group d-flex align-items-center justify-content-between">
-                  <a href="#" class="forgot-pass">Forgot password</a>
+                  <input type="password" name="password" class="form-control p_input">
                 </div>
                 <div class="text-center">
                   <button type="submit" class="btn btn-primary btn-block enter-btn">Login</button>

@@ -17,9 +17,9 @@ class DatabaseUtils:
         cursor.execute(
             """
             SELECT id FROM admin_system_attendance
-            WHERE created_at = %s AND student_id = %s AND subject_id = %s
+            WHERE student_id = %s AND subject_id = %s
             """,
-            (created_at, student_id, subject_id),
+            (student_id, subject_id),
         )
         existing_record = cursor.fetchone()
 
@@ -56,16 +56,25 @@ class DatabaseUtils:
         conn.commit()
         conn.close()
         
-    def load_faces_database(self):
+    def load_faces_database(self, subject_id):
         conn = mysql.connector.connect(**self.db_config)
         cursor = conn.cursor(dictionary=True)
         cursor.execute("USE attendance_tracking")
-
-        cursor.execute("SELECT faces FROM admin_system_student")
+        
+        query = """
+            SELECT s.id, s.faces 
+            FROM admin_system_student AS s
+            JOIN admin_system_enrollment AS e ON s.id = e.student_id
+            WHERE e.subject_id = %s
+        """
+        cursor.execute(query, (subject_id,))
         face_data = cursor.fetchall()
 
         for face in face_data:
-            face['faces'] = json.loads(face['faces'])
+            if face['faces']:
+                face['faces'] = json.loads(face['faces'])
+            else:
+                face['faces'] = []
 
         conn.close()
         return face_data

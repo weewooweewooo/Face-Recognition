@@ -7,11 +7,8 @@ from .models import Attendance, Student, Faculty
 
 @login_required
 def dashboard(request):
-    user_role = request.user.role
-    return render(request, 'admin_pages/dashboard.php', {'role': user_role})
-
-def documentation(request):
-    return render(request, 'admin_pages/documentation.php')
+    user = request.user
+    return render(request, 'admin_pages/dashboard.php', {'user': user})
 
 def login_view(request, user=None):
     if request.user.is_authenticated:
@@ -33,9 +30,6 @@ def login_view(request, user=None):
             messages.error(request, "Invalid username or password.")
 
     return render(request, 'admin_pages/index.php', {'next': next_url})
-
-def register(request):
-    return render(request, 'admin_pages/register.php')
 
 def logout_view(request):
     logout(request)

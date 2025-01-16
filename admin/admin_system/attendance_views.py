@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden
 from django.utils.timezone import now
 from .models import Attendance, Student, Subject, Enrollment
+import subprocess
+
 
 @login_required
 def attendance(request):
@@ -71,4 +73,23 @@ def attendance_subject(request, subject_id):
                 'error': f"Error fetching attendance details: {str(e)}",
             },
         )
-    
+
+
+@login_required
+def face_recognition(request, subject_id):
+    try:
+        script_path = r"D:\Git Project\Face-Recognition\webmain.py"
+        result = subprocess.run(
+            ["python", script_path, str(subject_id)],
+            capture_output=True, text=True
+        )
+
+        if result.returncode == 0:
+            messages.success(request, "Face recognition completed successfully!")
+        else:
+            messages.error(request, f"Error during face recognition: {result.stderr}")
+
+    except Exception as e:
+        messages.error(request, f"An error occurred: {str(e)}")
+
+    return redirect('attendance_subject', subject_id=subject_id)
