@@ -30,5 +30,6 @@ urlpatterns = [
     path('delete_enrollment/<int:enrollment_id>', enrollment_views.delete_enrollment, name='delete_enrollment'),
     
     path('profile/', views.profile, name='profile'),
+    path('update_profile/', views.update_profile, name='update_profile'),
     path('logout/', views.logout_view, name='logout'),
 ]

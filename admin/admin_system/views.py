@@ -38,7 +38,20 @@ def logout_view(request):
 
 @login_required
 def profile(request):
-    return render(request, 'admin_pages/profile.php')
+    user = request.user
+    return render(request, 'admin_pages/profile.php', {'user': user})
+
+@login_required
+def update_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        user.username = request.POST['username']
+        user.first_name = request.POST['firstName']
+        user.last_name = request.POST['lastName']
+        user.email = request.POST['email']
+        user.save()
+        return redirect('profile')
+    return render(request, 'admin_pages/profile.php', {'user': user})
 
 
 
