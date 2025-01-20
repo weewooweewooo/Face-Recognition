@@ -17,9 +17,9 @@ class DatabaseUtils:
         cursor.execute(
             """
             SELECT id FROM admin_system_attendance
-            WHERE student_id = %s AND subject_id = %s
+            WHERE student_id = %s AND subject_id = %s AND created_at = %s
             """,
-            (student_id, subject_id),
+            (student_id, subject_id, created_at),
         )
         existing_record = cursor.fetchone()
 

@@ -27,8 +27,9 @@ def attendance_subject(request, subject_id):
         enrollments = Enrollment.objects.filter(subject_id=subject_id)
         student_ids = enrollments.values_list('student_id', flat=True)
         students = Student.objects.filter(id__in=student_ids)
-
-        attendance_records = Attendance.objects.filter(subject_id=subject_id)
+        
+        today = now().date()
+        attendance_records = Attendance.objects.filter(subject_id=subject_id, created_at=today)
         attended_students = attendance_records.values_list('student_id', flat=True)
 
         if request.method == 'POST':
@@ -62,6 +63,7 @@ def attendance_subject(request, subject_id):
                 'subject': subject,
                 'students': students,
                 'attended_students': attended_students,
+                'attendance_taken_today': attendance_records.exists(),
             },
         )
     except Exception as e:

@@ -143,7 +143,7 @@
               <div class="card">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="card-title">Subjects</h4>
+                    <h4 class="card-title">User Management</h4>
                     <a class="nav-link btn btn-success create-new-button col-2" href="{% url 'add_user' %}">+ Create Admin</a>
                   </div>
                   <div class="table-responsive">
