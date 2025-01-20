@@ -7,7 +7,7 @@ import logging
 import albumentations as A
 import collections
 import argparse
-from datetime import datetime
+from datetime import date
 from yolox.tracker.byte_tracker import BYTETracker
 from sklearn.metrics.pairwise import cosine_similarity
 from database_utils import DatabaseUtils
@@ -200,7 +200,7 @@ class FaceTracker:
         )
 
     def record_attendance(self, name, id):
-        current_time = datetime.now()
+        current_time = date.today()
         status = "Present" if self.check_in_mode else "Check-Out"
         self.db_utils.log_attendance(current_time, status, id, self.subject_id)
         logging.info(f"Logged {status} for {name}")
