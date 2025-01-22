@@ -67,6 +67,14 @@
             <span class="menu-title">User Management</span>
           </a>
         </li>
+        <li class="nav-item menu-items">
+          <a class="nav-link" href="{% url 'student' %}">
+            <span class="menu-icon">
+              <i class="mdi mdi-contacts"></i>
+            </span>
+            <span class="menu-title">Student Management</span>
+          </a>
+        </li>
         {% endif %}
         <li class="nav-item menu-items">
           <a class="nav-link" data-toggle="collapse" href="#subjects" aria-expanded="false" aria-controls="subjects">

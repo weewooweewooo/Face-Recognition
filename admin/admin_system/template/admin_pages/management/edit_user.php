@@ -34,7 +34,7 @@
                             </div>
                             <div class="profile-name">
                                 <h5 class="mb-0 font-weight-normal">{{ user.username }}</h5>
-                                <span>{{ user.role }}</span>
+                                <span>{{ role }}</span>
                             </div>
                         </div>
                     </div>
@@ -143,43 +143,57 @@
                     </button>
                 </div>
             </nav>
+            <!-- partial -->
             <div class="main-panel">
                 <div class="content-wrapper">
-                    <div class="row">
+                    <div class="row ">
                         <div class="col-12 grid-margin stretch-card">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="card-title">Profile</h4>
-                                    <form class="forms-sample" id="profileForm" method="POST" action="{% url 'update_profile' %}">
+                                    <h4 class="card-title">Edit User</h4>
+                                    <p class="card-description"> Edit User for management </p>
+                                    <form class="forms-sample" method="POST">
                                         {% csrf_token %}
                                         <div class="form-group">
-                                            <label for="name">Name</label>
-                                            <input type="text" class="form-control" id="name" name="username" placeholder="Name" value="{{ user.username }}" disabled style="background-color: black;">
+                                            <label for="username">Name</label>
+                                            <input type="text" class="form-control" id="username" name="username" placeholder="Username" value="{{ user.username }}" style="color:white;">
                                         </div>
                                         <div class="form-group">
                                             <label for="firstName">First Name</label>
-                                            <input type="text" class="form-control" id="firstName" name="firstName" placeholder="First Name" value="{{ user.first_name }}" disabled style="background-color: black;">
+                                            <input type="text" class="form-control" id="firstName" name="firstName" placeholder="First Name" value="{{ user.first_name }}" style="color:white;">
                                         </div>
                                         <div class="form-group">
                                             <label for="lastName">Last Name</label>
-                                            <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Last Name" value="{{ user.last_name }}" disabled style="background-color: black;">
+                                            <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Last Name" value="{{ user.last_name }}" style="color:white;">
                                         </div>
                                         <div class="form-group">
-                                            <label for="email">Email address</label>
-                                            <input type="email" class="form-control" id="email" name="email" placeholder="Email" value="{{ user.email }}" disabled style="background-color: black;">
+                                            <label for="email">Email</label>
+                                            <input type="email" class="form-control" id="email" name="email" placeholder="Email" value="{{ user.email }}" style="color:white;">
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group mb-0">
                                             <label for="role">Role</label>
-                                            <input type="text" class="form-control" id="role" name="role" placeholder="Role" value="{{ user.role }}" disabled style="background-color: black;">
                                         </div>
-                                        <button type="button" class="btn btn-primary mr-2" id="editButton" onclick="enableEdit(event)">Edit</button>
-                                        <button type="button" class="btn btn-dark" id="cancelButton" onclick="cancelEdit()" style="display: none;">Cancel</button>
+                                        <div class="form-group dropdown">
+                                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="role" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Dropdown </button>
+                                            <div class="dropdown-menu" aria-labelledby="role">
+                                                <h6 class="dropdown-header">Role</h6>
+                                                <a class="dropdown-item" data-value="Admin">Admin</a>
+                                                <a class="dropdown-item" data-value="Super Admin">Super Admin</a>
+                                            </div>
+                                            <input type="hidden" id="roleInput" name="role" value="{{ user.role }}">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                                        <a class="btn btn-dark" href="{% url 'management' %}">Cancel</a>
                                     </form>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <footer class="footer">
+                    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+                    </div>
+                </footer>
             </div>
         </div>
     </div>
@@ -219,27 +233,13 @@
         }
     }
 
-    function enableEdit(event) {
-        event.preventDefault();
-        document.getElementById('name').disabled = false;
-        document.getElementById('firstName').disabled = false;
-        document.getElementById('lastName').disabled = false;
-        document.getElementById('email').disabled = false;
-        document.getElementById('editButton').innerText = 'Submit';
-        document.getElementById('editButton').setAttribute('type', 'submit');
-        document.getElementById('editButton').setAttribute('onclick', '');
-        document.getElementById('cancelButton').style.display = 'inline-block';
-    }
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', event => {
+            const value = event.target.getAttribute('data-value');
+            document.getElementById('roleInput').value = value;
+            document.getElementById('role').innerText = value;
+        });
+    });
 
-    function cancelEdit() {
-        document.getElementById('profileForm').reset();
-        document.getElementById('name').disabled = true;
-        document.getElementById('firstName').disabled = true;
-        document.getElementById('lastName').disabled = true;
-        document.getElementById('email').disabled = true;
-        document.getElementById('editButton').innerText = 'Edit';
-        document.getElementById('editButton').setAttribute('type', 'button');
-        document.getElementById('editButton').setAttribute('onclick', 'enableEdit(event)');
-        document.getElementById('cancelButton').style.display = 'none';
-    }
+    document.getElementById('role').innerText = document.getElementById('roleInput').value;
 </script>

@@ -47,11 +47,32 @@ class DatabaseUtils:
 
         cursor.execute(
             """
-            INSERT INTO admin_system_student (name, enrollment_number, faculty, faces)
-            VALUES (%s, %s, %s, %s)
+            SELECT id FROM admin_system_student
+            WHERE enrollment_number = %s
             """,
-            (name, enrollment_number, faculty, json.dumps(file_paths)),
+            (enrollment_number,)
         )
+        existing_record = cursor.fetchone()
+
+        if existing_record:
+            cursor.execute(
+                """
+                UPDATE admin_system_student
+                SET name = %s, faculty = %s, faces = %s
+                WHERE enrollment_number = %s
+                """,
+                (name, faculty, json.dumps(file_paths), enrollment_number)
+            )
+            print("Student record updated successfully.")
+        else:
+            cursor.execute(
+                """
+                INSERT INTO admin_system_student (name, enrollment_number, faculty, faces)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (name, enrollment_number, faculty, json.dumps(file_paths))
+            )
+            print("Student record inserted successfully.")
 
         conn.commit()
         conn.close()

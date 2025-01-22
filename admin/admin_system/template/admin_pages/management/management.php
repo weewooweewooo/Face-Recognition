@@ -67,6 +67,14 @@
             <span class="menu-title">User Management</span>
           </a>
         </li>
+        <li class="nav-item menu-items">
+          <a class="nav-link" href="{% url 'student' %}">
+            <span class="menu-icon">
+              <i class="mdi mdi-contacts"></i>
+            </span>
+            <span class="menu-title">Student Management</span>
+          </a>
+        </li>
         {% endif %}
         <li class="nav-item menu-items">
           <a class="nav-link" data-toggle="collapse" href="#subjects" aria-expanded="false" aria-controls="subjects">
@@ -144,51 +152,85 @@
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
                     <h4 class="card-title">User Management</h4>
+                    {% if users %}
                     <a class="nav-link btn btn-success create-new-button col-2" href="{% url 'add_user' %}">+ Create Admin</a>
+                    {% elif students %}
+                    <a class="nav-link btn btn-success create-new-button col-2" href="{% url 'add_student' %}">+ Create Student</a>
+                    {% endif %}
                   </div>
                   <div class="table-responsive">
                     <table class="table">
                       <thead>
+                        {% if users %}
                         <tr>
-                          <!-- <th>
-                            <div class="form-check form-check-muted m-0">
-                              <label class="form-check-label">
-                                <input type="checkbox" class="form-check-input">
-                              </label>
-                            </div>
-                          </th> -->
                           <th> Username </th>
                           <th> Date Joined </th>
                           <th> Role </th>
                         </tr>
+                        {% elif students %}
+                        <tr>
+                          <th> Name </th>
+                          <th> Enrollment Number </th>
+                          <th> Faculty </th>
+                        </tr>
+                        {% endif %}
                       </thead>
                       <tbody>
+                        {% if users %}
                         {% for user in users %}
                         <tr>
-                          <!-- <td>
-                            <div class="form-check form-check-muted m-0">
-                              <label class="form-check-label">
-                                <input type="checkbox" class="form-check-input">
-                              </label>
-                            </div>
-                          </td> -->
                           <td> {{ user.username }} </td>
                           <td> {{ user.date_joined }} </td>
                           <td> {{ user.role }} </td>
                           {% if user.role != 'Super Admin' %}
+                          <td class="col-2">
+                            <a href="{% url 'edit_user' user.id %}" type="button" class="btn btn-primary btn-fw">Edit</a>
+                          </td>
                           <td class="col-2">
                             <a href="{% url 'delete_user' user.id %}" type="button" class="btn btn-danger btn-fw">Delete</a>
                           </td>
                           {% endif %}
                           {% if user.role == 'Super Admin' %}
                           <td class="col-2"></td>
+                          <td class="col-2"></td>
                           {% endif %}
                         </tr>
                         {% empty %}
                         <tr>
-                          <td colspan="3" style="text-align: center;">No subjects found.</td>
+                          <td colspan="3" style="text-align: center;">No users found.</td>
                         </tr>
                         {% endfor %}
+                        {% elif students %}
+                        {% for student in students %}
+                        <tr>
+                          <td> {{ student.name }} </td>
+                          <td> {{ student.enrollment_number }} </td>
+                          <td> {{ student.faculty }} </td>
+                          <td class="col-2">
+                            <a href="{% url 'edit_student' student.id %}" type="button" class="btn btn-primary btn-fw">Edit</a>
+                          </td>
+                          <td class="col-2">
+                            <a href="{% url 'add_faces' student.id %}" type="button" class="btn btn-info btn-fw">Add Faces</a>
+                          </td>
+                          {% if student.role != 'Super Admin' %}
+                          <td class="col-2">
+                            <a href="{% url 'delete_student' student.id %}" type="button" class="btn btn-danger btn-fw">Delete</a>
+                          </td>
+                          {% endif %}
+                          {% if student.role == 'Super Admin' %}
+                          <td class="col-2"></td>
+                          {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                          <td colspan="3" style="text-align: center;">No students found.</td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                          <td colspan="3" style="text-align: center;">No data found.</td>
+                        </tr>
+                        {% endif %}
                       </tbody>
                     </table>
                   </div>

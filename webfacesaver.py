@@ -159,10 +159,9 @@ class AntiSpoofing:
             return False, "Error"
 
 class FaceTracker:
-    def __init__(self, detection_model_file, model, face_directory, subject_id):
+    def __init__(self, detection_model_file, model, face_directory):
         self.face_labels = {}
         self.next_label = 1
-        self.subject_id = subject_id
 
         self.face_detector = insightface.model_zoo.SCRFD(
             model_file=detection_model_file
@@ -174,8 +173,8 @@ class FaceTracker:
         self.recognition_model.prepare(ctx_id=0)
         self.anti_spoofing = AntiSpoofing(self.face_detector)
         self.db_utils = DatabaseUtils()
-        self.face_data = self.db_utils.load_faces_database(subject_id)
-        self.face_db = self.load_faces()
+        self.face_data = {}
+        self.face_db = {}
         args = TrackerArgs()
         self.tracker = BYTETracker(args, frame_rate=args.fps)
         self.last_logged_time = {}
@@ -199,13 +198,6 @@ class FaceTracker:
             self.face_detector, self.augmentation_pipeline, self.recognition_model, self.db_utils
         )
 
-    def record_attendance(self, name, id):
-        current_time = date.today()
-        status = "Present" if self.check_in_mode else "Check-Out"
-        self.db_utils.log_attendance(current_time, status, id, self.subject_id)
-        logging.info(f"Logged {status} for {name}")
-        self.last_logged_time[name] = current_time
-
     def identify_faces(self, embeddings):
         best_match = "Unknown"
         best_match_id = None
@@ -223,7 +215,6 @@ class FaceTracker:
                 best_match = name
                 best_match_id = id
         if highest_similarity > 0.6:
-            self.record_attendance(best_match, best_match_id)
             return best_match, highest_similarity
         else:
             return "Unknown", highest_similarity
@@ -416,15 +407,19 @@ class FaceTracker:
 
 def main():
     parser = argparse.ArgumentParser(description="Face Recognition Script")
-    parser.add_argument("subject_id", type=int, help="ID of the subject")
+    parser.add_argument("name", type=str, help="Name of the subject")
+    parser.add_argument("enrollment_number", type=str, help="Enrollment Number of the subject")
+    parser.add_argument("faculty", type=str, help="Faculty of the subject")
     args = parser.parse_args()
 
-    subject_id = args.subject_id    
+    student_name = args.name
+    enrollment_number = args.enrollment_number
+    faculty = args.faculty
         
     detection_model_file = os.path.join(BASE_DIR, "weights/scrfd_2.5g_bnkps.onnx")
     model = "buffalo_l"
     face_directory = os.path.join(BASE_DIR, "faces")
-    tracker = FaceTracker(detection_model_file, model, face_directory, subject_id)
+    tracker = FaceTracker(detection_model_file, model, face_directory)
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         logging.error("Error: Could not open webcam.")
@@ -433,9 +428,6 @@ def main():
     cap.set(cv2.CAP_PROP_AUTOFOCUS, 1)
     cap.set(cv2.CAP_PROP_FOCUS, 70)
 
-    logging.info(
-        "Press 'q' to quit. Press 'c' to switch between check-in and check-out."
-    )
     while True:
         start_time = time.time()
         ret, frame = cap.read()
@@ -445,30 +437,16 @@ def main():
         original_frame = frame.copy()
         annotated_frame = tracker.handle_frame(frame)
         if cv2.waitKey(1) & 0xFF == ord('s'):
-            number = input("Enter enrollment number: ")
-            name = input("Enter name for the new face: ")
-            tracker.face_saver.save_face(name, number, original_frame, face_directory, cap)
-            
-        if cv2.waitKey(1) & 0xFF == ord('c'):
-            tracker.check_in_mode = not tracker.check_in_mode
-            mode = "Check-In" if tracker.check_in_mode else "Check-Out"
-            logging.info(f"Switched to {mode} mode")
+            tracker.face_saver.save_face_web(student_name, enrollment_number, faculty, original_frame, face_directory, cap)
+            cap.release()
+            cv2.destroyAllWindows()
+        
         elapsed_time = time.time() - start_time
         fps = 1 / elapsed_time
         cv2.putText(
             frame,
             f"FPS: {fps:.2f}",
             (10, 30),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1,
-            (0, 255, 0),
-            2,
-        )
-        mode_text = "Check-In" if tracker.check_in_mode else "Check-Out"
-        cv2.putText(
-            frame,
-            f"Mode: {mode_text}",
-            (10, 60),
             cv2.FONT_HERSHEY_SIMPLEX,
             1,
             (0, 255, 0),

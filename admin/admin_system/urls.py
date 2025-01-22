@@ -17,7 +17,14 @@ urlpatterns = [
     # Management URLs
     path('management/', management_views.user_management, name='management'),
     path('add_user/', management_views.add_user, name='add_user'),
+    path('edit_user/<int:user_id>/', management_views.edit_user, name='edit_user'),
     path('delete_user/<int:user_id>/', management_views.delete_user, name='delete_user'),
+    
+    path('student/', management_views.student_management, name='student'),
+    path('add_student/', management_views.add_student, name='add_student'),
+    path('edit_student/<int:student_id>/', management_views.edit_student, name='edit_student'),
+    path('add_faces/<int:student_id>/', management_views.add_faces, name='add_faces'),
+    path('delete_student/<int:student_id>/', management_views.delete_student, name='delete_student'),
     
     # Subject URLs
     path('subject/', subject_views.subject, name='subject'),
