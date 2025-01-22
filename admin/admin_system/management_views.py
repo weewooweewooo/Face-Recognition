@@ -9,6 +9,8 @@ import os
 from django.conf import settings
 import shutil
 
+def alert_redirect(request, message, url_name):
+    return render(request, 'admin_pages/management/alert_redirect.php', {'alert_message': message, 'redirect_url': url_name})
 
 @login_required
 def user_management(request):
@@ -58,7 +60,7 @@ def add_user(request):
                 )
                 user.save()
                 messages.success(request, 'User added successfully!')
-                return redirect('management')
+                return alert_redirect(request, 'User added successfully!', 'management')
         except Exception as e:
             messages.error(request, f"Error: {e}")
         else:
@@ -88,7 +90,7 @@ def add_student(request):
                 )
                 student.save()
                 messages.success(request, 'Student added successfully!')
-                return redirect('student')
+                return alert_redirect(request, 'Student added successfully!', 'student')
         except Exception as e:
             messages.error(request, f"Error: {e}")
         else:
@@ -110,7 +112,7 @@ def edit_student(request, student_id):
             student.faculty = request.POST.get('faculty')
             student.save()
             messages.success(request, 'Student updated successfully!')
-            return redirect('student')
+            return alert_redirect(request, 'Student updated successfully!', 'student')
     
     return render(request, 'admin_pages/management/edit_student.php', {'role': user_role, 'student': student})
 
@@ -128,9 +130,9 @@ def edit_user(request, user_id):
             user.faculty = request.POST.get('faculty')
             user.save()
             messages.success(request, 'User updated successfully!')
-            return redirect('management')
+            return alert_redirect(request, 'User updated successfully!', 'management')
     
-    return render(request, 'admin_pages/management/edit_user.php', {'role': user_role, 'user': user})
+    return render(request, 'admin_pages/management/edit_user.php', {'role': user_role, 'users': user})
 
 @login_required
 def add_faces(request, student_id):
@@ -145,17 +147,14 @@ def add_faces(request, student_id):
         )
 
         if result.returncode == 0:
-            messages.success(request, "Face recognition completed successfully!")
             alert_message = "Face recognition completed successfully!"
         else:
-            messages.error(request, f"Error during face recognition: {result.stderr}")
             alert_message = f"Error during face recognition: {result.stderr}"
 
     except Exception as e:
-        messages.error(request, f"An error occurred: {str(e)}")
         alert_message = f"An error occurred: {str(e)}"
 
-    return render(request, 'admin_pages/management/alert_redirect.php', {'role': user_role, 'alert_message': alert_message})
+    return alert_redirect(request, alert_message, 'student')
 
 @login_required
 def delete_user(request, user_id):
@@ -163,7 +162,7 @@ def delete_user(request, user_id):
         try:
             subject = get_object_or_404(User, id=user_id)
             subject.delete()
-            messages.success(request, 'Subject deleted successfully.')
+            return alert_redirect(request, 'User deleted successfully.', 'management')
         except Exception as e:
             messages.error(request, f"Error: {e}")
     else:
@@ -181,7 +180,7 @@ def delete_student(request, student_id):
                 if os.path.exists(folder_path):
                     shutil.rmtree(folder_path)
             student.delete()
-            messages.success(request, 'Student deleted successfully.')
+            return alert_redirect(request, 'Student deleted successfully.', 'student')
         except Exception as e:
             messages.error(request, f"Error: {e}")
     else:

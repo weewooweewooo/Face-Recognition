@@ -150,40 +150,24 @@
                         <div class="col-12 grid-margin stretch-card">
                             <div class="card">
                                 <div class="card-body">
-                                    <h4 class="card-title">Edit User</h4>
-                                    <p class="card-description"> Edit User for management </p>
+                                    <h4 class="card-title">Edit Subject</h4>
+                                    <p class="card-description"> Edit Course / Subject for Students </p>
                                     <form class="forms-sample" method="POST">
                                         {% csrf_token %}
                                         <div class="form-group">
-                                            <label for="username">Name</label>
-                                            <input type="text" class="form-control" id="username" name="username" placeholder="Username" value="{{ users.username }}" style="color:white;">
+                                            <label for="courseName">Course Name</label>
+                                            <input type="text" class="form-control" id="courseName" name="courseName" placeholder="Course Name" value="{{ subject.name }}" style="color:white;">
                                         </div>
                                         <div class="form-group">
-                                            <label for="firstName">First Name</label>
-                                            <input type="text" class="form-control" id="firstName" name="firstName" placeholder="First Name" value="{{ users.first_name }}" style="color:white;">
+                                            <label for="courseCode">Course Code</label>
+                                            <input type="text" class="form-control" id="courseCode" name="courseCode" placeholder="Course Code" value="{{ subject.code }}" style="color:white;">
                                         </div>
                                         <div class="form-group">
-                                            <label for="lastName">Last Name</label>
-                                            <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Last Name" value="{{ users.last_name }}" style="color:white;">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="email">Email</label>
-                                            <input type="email" class="form-control" id="email" name="email" placeholder="Email" value="{{ users.email }}" style="color:white;">
-                                        </div>
-                                        <div class="form-group mb-0">
-                                            <label for="role">Role</label>
-                                        </div>
-                                        <div class="form-group dropdown">
-                                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="role" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Dropdown </button>
-                                            <div class="dropdown-menu" aria-labelledby="role">
-                                                <h6 class="dropdown-header">Role</h6>
-                                                <a class="dropdown-item" data-value="Admin">Admin</a>
-                                                <a class="dropdown-item" data-value="Super Admin">Super Admin</a>
-                                            </div>
-                                            <input type="hidden" id="roleInput" name="role" value="{{ users.role }}">
+                                            <label for="faculty">Faculty</label>
+                                            <input type="text" class="form-control" id="faculty" name="faculty" placeholder="Faculty" value="{{ subject.faculty }}" style="color:white;">
                                         </div>
                                         <button type="submit" class="btn btn-primary mr-2">Submit</button>
-                                        <a class="btn btn-dark" href="{% url 'management' %}">Cancel</a>
+                                        <a class="btn btn-dark" href="{% url 'subject' %}">Cancel</a>
                                     </form>
                                 </div>
                             </div>

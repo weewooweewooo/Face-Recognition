@@ -5,6 +5,9 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden
 from .models import Attendance, Student, Faculty, Enrollment, Subject
 
+def alert_redirect(request, message, url_name):
+    return render(request, 'admin_pages/subject/alert_redirect.php', {'alert_message': message, 'redirect_url': url_name})
+
 @login_required
 def subject(request):
     user_role = request.user.role
@@ -31,8 +34,7 @@ def add_subject(request):
                     messages.error(request, 'A subject with this code already exists.')
                 else:
                     Subject.objects.create(name=name, code=code, faculty=faculty)
-                    messages.success(request, 'Course added successfully')
-                    return redirect('subject')
+                    return alert_redirect(request, 'Course added successfully', 'subject')
             except Exception as e:
                 messages.error(request, f"Error: {e}")
         else:
@@ -45,11 +47,32 @@ def delete_subject(request, subject_id):
     if request.user.is_authenticated:
         try:
             subject = get_object_or_404(Subject, id=subject_id)
+            enrollments = Enrollment.objects.filter(subject_id=subject_id)
+            if enrollments.exists():
+                enrollments.delete()
             subject.delete()
-            messages.success(request, 'Subject deleted successfully.')
+            return alert_redirect(request, 'Subject and associated enrollments deleted successfully.', 'subject')
         except Exception as e:
             messages.error(request, f"Error: {e}")
     else:
         messages.error(request, 'You are not authorized to perform this action.')
 
-    return redirect('subject')  # Redirect to the subject list view
+
+@login_required
+def edit_subject(request, subject_id):
+    user_role = request.user.role
+    user = get_object_or_404(Subject, id=subject_id)
+    
+    if request.method == 'POST':
+        new_name = request.POST.get('courseName')
+        if Subject.objects.filter(name=new_name).exclude(id=subject_id).exists():
+            messages.error(request, 'A subject with this name already exists.')
+        else:
+            user.name = new_name
+            user.code = request.POST.get('courseCode')
+            user.faculty = request.POST.get('faculty')
+            user.save()
+            return alert_redirect(request, 'Subject updated successfully!', 'subject')
+        
+    return render(request, 'admin_pages/subject/edit_subject.php', {'role': user_role, 'subject': user})
+

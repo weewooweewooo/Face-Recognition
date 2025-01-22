@@ -6,6 +6,8 @@ from django.http import HttpResponseForbidden
 from django.utils.timezone import now
 from .models import Attendance, Student, Faculty, Subject, Enrollment
 
+def alert_redirect(request, message, url_name):
+    return render(request, 'admin_pages/enrollment/alert_redirect.php', {'alert_message': message, 'redirect_url': url_name})
 
 @login_required
 def enrollment(request):
@@ -63,8 +65,7 @@ def add_enrollment(request, student_id):
                     date_completed=None,
                     status='Enrolled',
                 )
-                messages.success(request, "Subject enrolled successfully.")
-                return redirect('enrollment')
+                return alert_redirect(request, "Subject enrolled successfully.", 'enrollment')
             except Exception as e:
                 messages.error(request, f"Error enrolling subject: {str(e)}")
     
@@ -81,8 +82,7 @@ def delete_enrollment(request, enrollment_id):
         try:
             enrollment = Enrollment.objects.get(id=enrollment_id)
             enrollment.delete()
-            messages.success(request, "Enrollment deleted successfully.")
-            return redirect('enrollment')
+            return alert_redirect(request, "Enrollment deleted successfully.", 'enrollment')
         
         except Exception as e:
             messages.error(request, f"Error deleting enrollment: {str(e)}")
@@ -90,7 +90,7 @@ def delete_enrollment(request, enrollment_id):
         messages.error(request, "You are not authorized to delete enrollments.")
         
     return redirect('enrollment')
-        
-        
-        
-        
+
+
+
+

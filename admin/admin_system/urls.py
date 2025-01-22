@@ -29,6 +29,7 @@ urlpatterns = [
     # Subject URLs
     path('subject/', subject_views.subject, name='subject'),
     path('add_subject/', subject_views.add_subject, name='add_subject'),
+    path('edit_subject/<int:subject_id>/', subject_views.edit_subject, name='edit_subject'),
     path('delete_subject/<int:subject_id>/', subject_views.delete_subject, name='delete_subject'),
    
     # Enrollment URLs

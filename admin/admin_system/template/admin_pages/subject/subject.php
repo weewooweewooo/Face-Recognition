@@ -184,6 +184,9 @@
                           <td> {{ subject.code }} </td>
                           <td> {{ subject.faculty }} </td>
                           <td class="col-2">
+                            <a href="{% url 'edit_subject' subject.id %}" type="button" class="btn btn-primary btn-fw">Edit</a>
+                          </td>
+                          <td class="col-2">
                             <a href="{% url 'delete_subject' subject.id %}" type="button" class="btn btn-danger btn-fw">Delete</a>
                           </td>
                         </tr>
