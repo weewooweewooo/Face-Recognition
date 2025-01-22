@@ -151,7 +151,11 @@
               <div class="card">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
+                    {% if users %}
                     <h4 class="card-title">User Management</h4>
+                    {% elif students %}
+                    <h4 class="card-title">Student Management</h4>
+                    {% endif %}
                     {% if users %}
                     <a class="nav-link btn btn-success create-new-button col-2" href="{% url 'add_user' %}">+ Create Admin</a>
                     {% elif students %}
