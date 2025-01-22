@@ -436,6 +436,26 @@ def main():
             break
         original_frame = frame.copy()
         annotated_frame = tracker.handle_frame(frame)
+        
+        cv2.putText(
+            annotated_frame,
+            "Press S to save cropped face",
+            (10, 60),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, 255, 0),
+            1,
+        )
+        cv2.putText(
+            annotated_frame,
+            "Press Q to exit",
+            (10, 80),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, 255, 0),
+            1,
+        )
+        
         if cv2.waitKey(1) & 0xFF == ord('s'):
             tracker.face_saver.save_face_web(student_name, enrollment_number, faculty, original_frame, face_directory, cap)
             cap.release()

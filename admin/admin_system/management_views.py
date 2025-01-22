@@ -5,6 +5,9 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden
 from .models import Attendance, Student, Faculty, Enrollment, Subject, User
 import subprocess
+import os
+from django.conf import settings
+import shutil
 
 
 @login_required
@@ -172,8 +175,12 @@ def delete_user(request, user_id):
 def delete_student(request, student_id):
     if request.user.is_authenticated:
         try:
-            subject = get_object_or_404(Student, id=student_id)
-            subject.delete()
+            student = get_object_or_404(Student, id=student_id)
+            if student.faces:
+                folder_path = os.path.dirname(os.path.join(settings.MEDIA_ROOT, student.faces[0]))
+                if os.path.exists(folder_path):
+                    shutil.rmtree(folder_path)
+            student.delete()
             messages.success(request, 'Student deleted successfully.')
         except Exception as e:
             messages.error(request, f"Error: {e}")

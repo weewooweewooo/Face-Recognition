@@ -4,6 +4,7 @@ import json
 import cv2
 import os
 from face_utils import FaceUtils
+BASE_DIR = r"D:\Git Project\Face-Recognition"
 
 class DatabaseUtils:
     def __init__(self):
@@ -47,7 +48,7 @@ class DatabaseUtils:
 
         cursor.execute(
             """
-            SELECT id FROM admin_system_student
+            SELECT id, faces FROM admin_system_student
             WHERE enrollment_number = %s
             """,
             (enrollment_number,)
@@ -55,6 +56,15 @@ class DatabaseUtils:
         existing_record = cursor.fetchone()
 
         if existing_record:
+            student_id, existing_faces = existing_record
+            if existing_faces:
+                existing_faces = json.loads(existing_faces)
+                for face_path in existing_faces:
+                    full_path = os.path.join(BASE_DIR, face_path)
+                    if os.path.exists(full_path):
+                        os.remove(full_path)
+                        print(f"Deleted old face image: {full_path}")
+
             cursor.execute(
                 """
                 UPDATE admin_system_student
